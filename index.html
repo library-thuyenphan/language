@@ -1,0 +1,1553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biblical Greek Lexical Aids</title>
+    <style>
+        :root {
+            --sidebar-width: 300px;
+            --primary-color: #4ba3e3;
+            --selected-color: #e34b4b;
+            --card-bg: #fff;
+            --text-color: #333;
+            --sidebar-bg: #f5f8fa;
+        }
+
+        @font-face {
+            font-family: 'GFS Neohellenic';
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-gfs/1.0.0/neohellenic/GFSNeohellenic-Regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @font-face {
+            font-family: 'GFS Neohellenic';
+            src: url('https://cdnjs.cloudflare.com/ajax/libs/font-gfs/1.0.0/neohellenic/GFSNeohellenic-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        main {
+            display: flex;
+            flex: 1;
+        }
+
+        .sidebar {
+            background-color: var(--sidebar-bg);
+            width: var(--sidebar-width);
+            padding: 1rem;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+        }
+
+        .sidebar h2 {
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .category {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .category:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .category.selected {
+            background-color: var(--selected-color);
+            color: black;
+        }
+
+        .category-count {
+            font-size: 0.7rem;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            padding: 0 0.3rem;
+            margin-top: 0.2rem;
+            display: inline-block;
+            align-self: center;
+        }
+
+        .content {
+            flex: 1;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flash-card {
+            width: 1000px;
+            height: 400px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 1.5rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            text-align: center;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .greek-word-container {
+            height: 40%;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .greek-word {
+            font-family: 'GFS Neohellenic', serif;
+            font-size: 6rem;
+            font-weight: bold;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        .definition-container {
+            height: 60%;
+            width: 100%;
+            padding-top: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .word-definition {
+            font-size: 2rem;
+            word-break: break-word;
+            max-width: 100%;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+            gap: 1rem;
+        }
+
+        .nav-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .nav-button:hover {
+            opacity: 0.9;
+        }
+
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background-color: #eee;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: var(--primary-color);
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+            }
+
+            .flash-card {
+                width: 90%;
+                height: 60vh;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flash-card {
+                width: 95%;
+            }
+
+            .greek-word {
+                font-size: 3rem;
+            }
+
+            .word-definition {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BIBLICAL GREEK LEXICAL AIDS</h1>
+        <h2>(coded by THUYEN PHAN, MDiv, ThM, PhD)</h2>
+    </header>
+    <main>
+        <aside class="sidebar">
+            <h2>Word Occurrences</h2>
+            <div class="category-grid" id="categoryGrid"></div>
+        </aside>
+        <section class="content">
+            <div class="flash-card" id="flashCard">
+                <div class="card-content" id="cardContent">
+                    <h1>PLEASE SELECT A CATEGORY TO BEGIN</h1>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+            <div class="navigation">
+                <button class="nav-button" id="prevButton" disabled>Previous</button>
+                <button class="nav-button" id="nextButton" disabled>Next</button>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Sample vocabulary data - replace with your actual data
+        const vocabularyCategories = [
+            { name: "500+ times", count: 35, words: [
+                { greek: "ἄνθρωπος, ὁ", definition: "a man" },
+                { greek: "ἀπό", definition: "(gen.) from" },
+                { greek: "αὐτός, -ή, -ό", definition: "he, she, it, self, same" },
+                { greek: "γάρ", definition: "for" },
+                { greek: "γίνομαι", definition: "I become, am" },
+                { greek: "δέ", definition: "but, and" },
+                { greek: "διά", definition: "(gen.), through, (acc.), on account of" },
+                { greek: "ἐγώ", definition: "I (egotism)" },
+                { greek: "εἰμί", definition: "I am" },
+                { greek: "εἶπον", definition: "I said (cf. epic)" },
+                { greek: "εἰς", definition: "(acc.) into" },
+                { greek: "ἐκ, ἐξ", definition: "(gen.) out of, from (ecstasy)" },
+                { greek: "ἐν", definition: "(dat.) in (enthusiast)" },
+                { greek: "ἐπί", definition: "(gen.) over, on, at the time of; (dat.) on the basis of, at; (acc.) on, to, against" },
+                { greek: "ἔρχομαι", definition: "I come, go" },
+                { greek: "ἔχω", definition: "I have, hold" },
+                { greek: "θεός, -οῦ, ὁ", definition: "a god, God (theology)" },
+                { greek: "ἵνα", definition: "in order that, that" },
+                { greek: "καί", definition: "and, even, also" },
+                { greek: "κατά", definition: "(gen.) down from, against; (acc.) according to, throughout, during" },
+                { greek: "κύριος, -ου, ὁ", definition: "a lord, the Lord" },
+                { greek: "λέγω", definition: "I say, speak" },
+                { greek: "μή", definition: "not, lest" },
+                { greek: "ὁ, ἡ, τό", definition: "the" },
+                { greek: "ὅς, ἥ, ὅ", definition: "who, which" },
+                { greek: "ὅτι", definition: "that, because" },
+                { greek: "οὗτος, αὕτη, τοῦτο", definition: "this; he, her, it" },
+                { greek: "οὐ, οὐκ, οὐχ", definition: "not (utopia)" },
+                { greek: "πᾶς, πᾶσα, πᾶν", definition: "every, all" },
+                { greek: "ποιέω", definition: "I do, make" },
+                { greek: "πρός", definition: "(acc.) to, towards, with" },
+                { greek: "σύ", definition: "thou, you" },
+                { greek: "τίς, τί", definition: "who? what? which? why?" },
+                { greek: "τις, τι", definition: "someone, something, a certain one, a certain thing, anyone, anything" },
+                { greek: "ὡς", definition: "as, that, how, about" }
+            ]},
+            { name: "201 to 500", count: 40, words: [
+                { greek: "ἅγιος, -α, -ον", definition: "holy; (plural as a noun) saints" },
+                { greek: "ἀδελφός, -οῦ, ὁ", definition: "brother (Philadelphia, city of brotherly love, φιλία)" },
+                { greek: "ἀκούω", definition: "I hear (acoustics)" },
+                { greek: "ἀλλά", definition: "but, except" },
+                { greek: "ἀνήρ, ἀνδρός, ὁ", definition: "a man" },
+                { greek: "ἀποκρίνομαι", definition: "I answer" },
+                { greek: "γῆ, γῆς, ἡ", definition: "the earth (geopolitics)" },
+                { greek: "γινώσκω", definition: "I come to know, learn, know, realize" },
+                { greek: "γυνή, γυναικός, ἡ", definition: "a woman, wife" },
+                { greek: "δίδωμι", definition: "I give (antidote)" },
+                { greek: "δύναμαι", definition: "I am powerful, able (cf. dynamite)" },
+                { greek: "ἐάν", definition: "if" },
+                { greek: "ἑαυτοῦ", definition: "of himself" },
+                { greek: "εἰ", definition: "if" },
+                { greek: "εἶδον", definition: "I saw (idea)" },
+                { greek: "εἶς, μία, ἕν", definition: "one (henotheism)" },
+                { greek: "ἐκεῖνος, -η, -ο", definition: "that" },
+                { greek: "ἐξέρχομαι", definition: "I go out" },
+                { greek: "ἤ", definition: "or" },
+                { greek: "ἡμέρα, -ας, ἡ", definition: "a day (ephemeral)" },
+                { greek: "θέλω", definition: "I will, wish, desire (Monothelite)" },
+                { greek: "λαλέω", definition: "I speak" },
+                { greek: "λαμβάνω", definition: "I take, receive (epilepsy)" },
+                { greek: "λόγος, -ου, ὁ", definition: "a word, the Word (logic)" },
+                { greek: "μαθητής, -οῦ, ὁ", definition: "a disciple" },
+                { greek: "μετά", definition: "(gen.) with; (acc.) after (metaphysics)"},
+                { greek: "οἶδα", definition: "I know" },
+                { greek: "ὄνομα, -ατος, τό", definition: "a name (onomatopoeia)" },
+                { greek: "οὐδείς, οὐδεμία, οὐδέν", definition: "no one, none, nothing, no" },
+                { greek: "οὖν", definition: "therefore, then, accordingly" },
+                { greek: "οὐρανός, -οῦ, ὁ", definition: "heaven" },
+                { greek: "οὕτως", definition: "thus" },
+                { greek: "πατήρ", definition: "father (akin to paternal)" },
+                { greek: "περί", definition: "(gen.) concerning, about; (acc.) around" },
+                { greek: "πιστεύω", definition: "I have faith (in), I believe" },
+                { greek: "πίστις, -εως, ἡ", definition: " faith, belief, trust" },
+                { greek: "πνεῦμα, -ατος, τό", definition: "a spirit, the Spirit" },
+                { greek: "πολύς, πολλή, πολύ", definition: "much; (plural) many" },
+                { greek: "υἱός, -οῦ, ὁ", definition: "a son" },
+                { greek: "ὑπό", definition: "(gen.) by; (acc.) under" }
+            ]},
+            { name: "151 to 200", count: 30, words: [
+                { greek: "ἄγγελος, -ου, ὁ", definition: "a messenger, an angel" },
+                { greek: "ἁμαρτία, -ας, ἡ", definition: "a sin, sin (hamartiology, the doctrine of sin)" },
+                { greek: "ἄν", definition: "(an untranslatable word, the effect of which is to make a statement contingent which would otherwise be definite)" },
+                { greek: "βασιλεία, -ας, ἡ", definition: "a kingdom" },
+                { greek: "γράφω", definition: "I write (palaeography, the study of ancient [παλαιός] writing)" },
+                { greek: "δόξα, -ης, ἡ", definition: "glory (doxology)" },
+                { greek: "ἔθνος, -ους, τό", definition: "a nation; plural, the Gentiles (ethnology)" },
+                { greek: "εἰσέρχομαι", definition: "I go or come in or into, enter" },
+                { greek: "ἔργον, -ου, τό", definition: "work (energy)" },
+                { greek: "ἐσθίω", definition: "I eat (akin to edible)" },
+                { greek: "εὑρίσκω", definition: "I find (heuristic, the method in education by which a pupil is set to find out things for himself; eureka, ‘I have found [it]!’—Archimedes)" },
+                { greek: "ἰδού", definition: "see! behold!" },
+                { greek: "ἵστημι", definition: "I cause to stand, I stand" },
+                { greek: "καθώς", definition: "as, even as" },
+                { greek: "καρδία, -ας, ἡ", definition: "the heart (cardiac)" },
+                { greek: "κόσμος, ου, ὁ", definition: "the world (cosmic, cosmos)" },
+                { greek: "μέγας, μεγάλη, μέγα", definition: "large, great (megaphone; omega [literally, great ‘o’])" },
+                { greek: "μέν", definition: "postpositive particle, on the one hand, indeed (often it is better left untranslated and its presence shown by the stress of the voice and by translating a following δέ by ‘but’)" },
+                { greek: "νεκρός, -ά, -όν", definition: "dead; as a noun, a dead body, a corpse (necropolis, city of the dead, a cemetery)" },
+                { greek: "νόμος, -ου, ὁ", definition: "a law, the Law (Deuteronomy, the second [statement of the] law)" },
+                { greek: "ὅστις, ἥτις, ὅτι", definition: "whoever, whichever, whatever" },
+                { greek: "ὄχλος, -ου, ὁ", definition: "a crowd, multitude (ochlocracy, mob-rule)" },
+                { greek: "παρά", definition: "(gen.) from; (dat.) beside, in the presence of; (acc.) alongside of (paragraph, originally, in manuscripts, a stroke or line drawn in the margin beside the column of writing to mark the division of sections)" },
+                { greek: "πόλις, -εως, ἡ", definition: "a city (Neapolis, ‘New City,’ Acts 16:11; Constantinople, Constantine’s City)" },
+                { greek: "πορεύομαι", definition: "I go, proceed" },
+                { greek: "τε", definition: "(an enclitic connective particle, weaker in force than καί), and" },
+                { greek: "τότε", definition: "then, at that time" },
+                { greek: "ὑπέρ", definition: " (gen.) in behalf of; (acc.) above (hypercritical)" },
+                { greek: "χάρις, -ιτος, ἡ", definition: "grace (Charissa, [girl’s name])" },
+                { greek: "χείρ, χειρός, ἡ", definition: "a hand (chirography, handwriting)" }
+            ]},
+            { name: "121 to 150", count: 27, words: [
+                { greek: "ἀγαπάω", definition: "I love" },
+                { greek: "αἰών, -ῶνος, ὁ", definition: "an age (aeon)" },
+                { greek: "ἄλλος, -η, -ο", definition: "other, another (allegory, description of one thing under the image of another)" },
+                { greek: "ἀμήν", definition: "verily, truly, amen (amen)" },
+                { greek: "ἀποστέλλω", definition: "I send (with a commission) (cf. Apostle)" },
+                { greek: "ἀρχιερεύς, -έως, ὁ", definition: "chief priest, high priest" },
+                { greek: "ἀφίημι", definition: "I let go, permit, forgive (aphesis, the gradual loss of a short unaccented initial vowel, as ‘squire’ for ‘esquire’)" },
+                { greek: "βάλλω", definition: "I throw, put (ballistics, the science of the motion of projectiles)" },
+                { greek: "βλέπω", definition: "I see" },
+                { greek: "δοῦλος, -ου, ὁ", definition: "a slave" },
+                { greek: "δύο", definition: "two (dyad)" },
+                { greek: "ἐγείρω", definition: "I raise up" },
+                { greek: "ἕως", definition: "until; (gen.) as far as" },
+                { greek: "ζάω", definition: "I live" },
+                { greek: "ζωή, -ῆς, ἡ", definition: "life (Zoe [girl’s name])" },
+                { greek: "καλέω", definition: "I call, name, invite" },
+                { greek: "λαός, -οῦ, ὁ", definition: "a people (laity)" },
+                { greek: "νῦν", definition: "now" },
+                { greek: "ὅταν", definition: "whenever" },
+                { greek: "οὐδέ", definition: "and not, not even, neither, nor" },
+                { greek: "πάλιν", definition: "again (palimpsest, a manuscript which has been used again, the earlier writing having been erased [ψῆν, to scrape or erase])" },
+                { greek: "παραδίδωμι", definition: "I hand over, betray" },
+                { greek: "προφήτης, -ου, ὁ", definition: "a prophet (prophet)" },
+                { greek: "σάρξ, σαρκός, ἡ", definition: "flesh (sarcophagus, a [stone] coffin which ‘eats’ [φαγεῖν] the contents)" },
+                { greek: "σύν", definition: "(dat.) with (syntax., sentence construction, involving grammatical arrangement [τάσσειν] of words with one another)" },
+                { greek: "σῶμα, -ατος, τό", definition: "a body (somatic)" },
+                { greek: "φωνή, -ῆς", definition: "a sound, voice (phonetic)" },
+            ] },
+            { name: "101 to 120", count: 28, words: [
+                { greek: "ἀγαθός, -ή, -όν", definition: "good (Agatha)" },
+                { greek: "ἀγάπη, -ης, ἡ", definition: "love" },
+                { greek: "ἀλήθεια, -ας, ἡ", definition: "truth" },
+                { greek: "ἀνίστημι", definition: "I cause to rise; I arise" },
+                { greek: "ἀπέρχομαι", definition: "I depart" },
+                { greek: "ἀποθνῄσκω", definition: "I die" },
+                { greek: "βασιλεύς, -έως, ὁ", definition: "a king (Basil)" },
+                { greek: "δεῖ", definition: "it is necessary" },
+                { greek: "δύναμις, -εως, ἡ", definition: "power (dynamite)" },
+                { greek: "ἐκκλησία, -ας, ἡ", definition: "assembly, congregation, a church, the Church (ecclesiastic)" },
+                { greek: "ἐξουσία, -ας, ἡ", definition: "authority" },
+                { greek: "ζητέω", definition: "I seek" },
+                { greek: "θάνατος, -ου, ὁ", definition: "death (thanatopsis, a view of, or meditation on, death)" },
+                { greek: "ἴδιος, -α, -ον", definition: "one’s own (idiosyncrasy)" },
+                { greek: "κρίνω", definition: "I judge, decide (critic)" },
+                { greek: "μέλλω", definition: "I am about to" },
+                { greek: "μένω", definition: "I remain (akin to permanent)" },
+                { greek: "ὁδός, -οῦ, ἡ", definition: "a way, road, journey, (anode, cathode, electrical terminals)" },
+                { greek: "οἷκος, -ου, ὁ", definition: "a house (economy, household management)" },
+                { greek: "ὅλος, -η, -ον", definition: "whole (holocaust)" },
+                { greek: "ὁράω", definition: "I see (cf. panorama [πᾶν, all + ὅραμα, a view])" },
+                { greek: "ὅσος, -η, -ον", definition: "as great as, as many as" },
+                { greek: "ὅτε", definition: "when" },
+                { greek: "παρακαλέω", definition: "I beseech, exhort, console (Paraclete, the Comforter, Helper, Advocate, or Counselor)" },
+                { greek: "πῶς", definition: "how?" },
+                { greek: "σῴζω", definition: "I save (in biochemistry, sozin, any defensive protein in the animal body)" },
+                { greek: "ψυχή, -ῆς, ἡ", definition: "soul, life, self (all words beginning with psycho-)" },
+                { greek: "ὥρα, -ας, ἡ", definition: "an hour (horoscope, prediction based on the observation of the hour of one’s birth)" },
+            ] },
+            { name: "91 to 100", count: 23, words: [
+                { greek: "αἶμα, -ατος, τό", definition: "blood (anaemia, without blood; haemoglobin)" },
+                { greek: "αἴρω", definition: "I take up, take away" },
+                { greek: "ἀλλήλων", definition: "of one another (parallel, beside [παρʼ] one another)" },
+                { greek: "ἄρτος, -ου, ὁ", definition: "bread, a loaf" },
+                { greek: "γεννάω", definition: "I beget (cf. hydrogen, so called as being considered the generator of water [ὕδωρ])" },
+                { greek: "διδάσκω", definition: "I teach (cf. didactic)" },
+                { greek: "δικαιοσύνη, -ης, ἡ", definition: "righteousness" },
+                { greek: "εἰρήνη, -ης, ἡ", definition: "peace (Irene)" },
+                { greek: "ἐκεῖ", definition: "there" },
+                { greek: "ἐρῶ", definition: "I shall say" },
+                { greek: "ἕτερος, -α, -ον", definition: "other, another, different (heterodoxy)" },
+                { greek: "θάλασσα, -ης, ἡ", definition: "the sea (thalassic)" },
+                { greek: "καλός, -ή, -όν", definition: "beautiful, good (kaleidoscope [εἶδος, form + σκοπεῖν, to behold])" },
+                { greek: "οἰκία, -ας, ἡ", definition: "a house" },
+                { greek: "οὔτε", definition: "neither, nor" },
+                { greek: "ὀφθαλμός, -οῦ, ὁ", definition: "an eye (ophthalmology)" },
+                { greek: "περιπατέω", definition: "I walk; I live (peripatetics)" },
+                { greek: "πούς, ποδός, ὁ", definition: "a foot (podium)" },
+                { greek: "πρῶτος, -η, -ον", definition: "first (all words beginning with proto-)" },
+                { greek: "τέκνον, -ου, τό", definition: "a child" },
+                { greek: "τίθημι", definition: "I place (cf. antithesis)" },
+                { greek: "τόπος, -ου, ὁ", definition: "a place (topography, topic)" },
+                { greek: "φοβέομαι", definition: "I fear (cf. phobia)" },
+            ] },
+            { name: "81 to 90", count: 18, words: [
+                { greek: "ἀκολουθέω", definition: "I follow (cf. acolyte, the assistant who carries the wine and water and the lights at the celebration of the Mass, attending or following the priest)" },
+                { greek: "ἀναβαίνω", definition: "I go up (Anabasis)" },
+                { greek: "ἀπόλλυμι", definition: "I destroy; (middle) I perish (Apollyon, the angel of the bottomless pit, Rev. 9:11)" },
+                { greek: "ἄρχω", definition: "I rule; (in the New Testament almost always middle) I begin" },
+                { greek: "ἕκαστος, -η, -ον", definition: "each" },
+                { greek: "ἐκβάλλω", definition: "I cast out" },
+                { greek: "ἐνώπιον", definition: "(gen.) before" },
+                { greek: "ἔτι", definition: "still, yet, even" },
+                { greek: "κάθημαι", definition: "I sit" },
+                { greek: "καιρός, -οῦ, ὁ", definition: "time, an appointed time, season" },
+                { greek: "μηδείς, μηδεμία, μηδέν", definition: "no one" },
+                { greek: "μήτηρ, μητρός, ἡ", definition: "a mother (akin to maternal)" },
+                { greek: "ὅπου", definition: "where, whither" },
+                { greek: "πίπτω", definition: "I fall" },
+                { greek: "πληρόω", definition: "I fill, fulfill" },
+                { greek: "προσέρχομαι", definition: "I come to" },
+                { greek: "προσεύχομαι", definition: "I pray" },
+                { greek: "ὥστε", definition: "so that" },
+            ] },
+            { name: "71 to 80", count: 27, words: [
+                { greek: "αἰτέω", definition: "I ask" },
+                { greek: "ἀνοίγω", definition: "I open" },
+                { greek: "ἀποκτείνω", definition: "I kill" },
+                { greek: "ἀπόστολος, -ου, ὁ", definition: "an Apostle (Apostle)" },
+                { greek: "βαπτίζω", definition: "I baptize (baptize)" },
+                { greek: "δίκαιος, -α, -ον", definition: "right, just, righteous" },
+                { greek: "δώδεκα", definition: "twelve (dodecagon)" },
+                { greek: "ἐμός, ἐμή, ἐμόν", definition: "my, mine" },
+                { greek: "ἑπτά", definition: "seven (heptagon)" },
+                { greek: "εὐαγγέλιον, -ου, τό", definition: "good news (of the coming of the Messiah), the Gospel (Evangel)" },
+                { greek: "ἱερόν, -οῦ, τό", definition: "a temple (cf. hierarchy)" },
+                { greek: "καταβαίνω", definition: "I go down" },
+                { greek: "κεφαλή, -ῆς, ἡ", definition: "head (cephalic)" },
+                { greek: "μᾶλλον", definition: "more, rather" },
+                { greek: "μαρτυρέω", definition: "I bear witness, testify (cf. martyr)" },
+                { greek: "πέμπω", definition: "I send" },
+                { greek: "πίνω", definition: "I drink (cf. potion)" },
+                { greek: "πονηρός, -ά, -όν", definition: "evil" },
+                { greek: "πρόσωπον, -ου, τό", definition: "face (prosopography, description of the face or personal appearance)" },
+                { greek: "πῦρ, πυρός, τό", definition: "fire (pyre)" },
+                { greek: "σημεῖον, -ου, τό", definition: "a sign (cf. semaphore, bearing [φέρειν] a sign)" },
+                { greek: "στόμα, -ατος, τό", definition: "a mouth (stomach)" },
+                { greek: "τηρέω", definition: "I keep" },
+                { greek: "ὕδωρ, ὕδατος, τό", definition: "water (hydrophobia; dropsy [formerly hydropsy])" },
+                { greek: "ὑπάγω", definition: "I depart" },
+                { greek: "φῶς, φωτός, τό", definition: "light (photography, writing [γράφειν] with light)" },
+                { greek: "χαίρω", definition: "I rejoice" },
+            ] },
+            { name: "61 to 70", count: 24, words: [
+                { greek: "ἀγαπητός, -ή, -όν", definition: "beloved" },
+                { greek: "ἄγω", definition: "I lead" },
+                { greek: "αἰώνιος, -ον", definition: "eternal (aeonian)" },
+                { greek: "ἀπολύω", definition: "I release" },
+                { greek: "γραμματεύς, -έως, ὁ", definition: "a scribe (cf. grammatical)" },
+                { greek: "δαιμόνιον, -ου, τό", definition: "a demon (demon)" },
+                { greek: "δοκέω", definition: "I think; seem (Docetism, the early heresy that Christ’s body was phantasmal or of celestial substance which merely seemed human)" },
+                { greek: "ἐντολή, -ῆς, ἡ", definition: "a commandment" },
+                { greek: "ἔξω", definition: "without; (gen.) outside" },
+                { greek: "θέλημα, -ατος, τό", definition: "will (Monothelite, one who holds that Christ had but one will, the divine; condemned by the Sixth General Council, a.d. 680)" },
+                { greek: "ἱμάτιον, -ου, τό", definition: "a garment" },
+                { greek: "καρπός, -οῦ, ὁ", definition: "fruit" },
+                { greek: "κηρύσσω", definition: "I proclaim (as a herald, κῆρυξ), preach" },
+                { greek: "νύξ, νυκτός, ἡ", definition: "night" },
+                { greek: "ὄρος, ὄρους, τό", definition: "a mountain (orology, the scientific study of mountains)" },
+                { greek: "πιστός, -ή, όν", definition: "faithful, believing" },
+                { greek: "πλοῖον, -ου, τό", definition: "a boat" },
+                { greek: "πρεσβύτερος, -α, -ον", definition: "elder (presbyter)" },
+                { greek: "ῥῆμα -ατος, τό", definition: "a word (cf. rhetoric)" },
+                { greek: "σάββατον, -ου, τό", definition: "the Sabbath (Sabbath)" },
+                { greek: "συνάγω", definition: "I gather together (synagogue)" },
+                { greek: "τρεῖς, τρία", definition: "three (triad)" },
+                { greek: "φέρω", definition: "I carry, bear, lead (Christopher, bearing Christ)" },
+                { greek: "ὧδε", definition: "hither, here" },
+            ] },
+            { name: "56 to 60", count: 20, words: [
+                { greek: "ἀρχή, -ῆς, ἡ", definition: "a beginning (archaic)" },
+                { greek: "ἀσπάζομαι", definition: "I greet, salute" },
+                { greek: "δέχομαι", definition: "I receive" },
+                { greek: "διδάσκαλος, -ου, ὁ", definition: "a teacher (cf. didactic)" },
+                { greek: "δοξάζω", definition: "I glorify (cf. doxology)" },
+                { greek: "ἐπερωτάω", definition: "I ask, question, demand of" },
+                { greek: "ἐρωτάω", definition: "I ask, request, entreat" },
+                { greek: "ἤδη", definition: "now, already" },
+                { greek: "θρόνος, -ου, ὁ", definition: "a throne (throne)" },
+                { greek: "κράζω", definition: "I cry out" },
+                { greek: "λοιπός, -ή, -όν", definition: "remaining; (as a noun), the rest; (as an adverb), for the rest, henceforth" },
+                { greek: "μέσος, -η, -ον", definition: "middle, in the midst (Mesopotamia, in the midst of the rivers [Tigris and Euphrates])" },
+                { greek: "οὐχί", definition: "not (strengthened form of οὐ)" },
+                { greek: "πλείων, -ονος", definition: "larger, more (pleonasm)" },
+                { greek: "προσκυνέω", definition: "I worship" },
+                { greek: "συναγωγή, -ῆς, ἡ", definition: "a synagogue (synagogue)" },
+                { greek: "τοιοῦτος, -αύτη, -οῦτον, -οῦτο", definition: "such" },
+                { greek: "ὑπάρχω", definition: "I am, exist (τὰ ὑπάρχοντα: one’s belongings)" },
+                { greek: "φημί", definition: "I say" },
+                { greek: "χαρά, -ᾶς, ἡ", definition: "joy, delight" },
+            ] },
+            { name: "50 to 55", count: 21, words: [
+                { greek: "ἄχρι, ἄχρις", definition: "(gen.) as far as, up to; (as a conjunction), until" },
+                { greek: "γλῶσσα, -ης, ἡ", definition: "a tongue, language (glossolalia, the gift of speaking [cf. λαλεῖν] in tongues, 1 Cor. 14)" },
+                { greek: "γραφή, -ῆς, ἡ", definition: "a writing, Scripture (Hagiographa, books of the Hebrew Scriptures not included under Law and Prophets)" },
+                { greek: "δεξιός, -ά, -όν", definition: "right (opp. left) (akin to dexterous)" },
+                { greek: "διό", definition: "wherefore" },
+                { greek: "ἐλπίς, -ίδος, ἡ", definition: "hope" },
+                { greek: "ἐπαγγελία, -ας, ἡ", definition: "a promise" },
+                { greek: "ἔσχατος, -η, -ον", definition: "last (eschatology)" },
+                { greek: "εὐαγγελίζω", definition: "I bring good news, preach good tidings (the Gospel) (evangelize)" },
+                { greek: "εὐθύς", definition: "straightway, immediately" },
+                { greek: "θεωρέω", definition: "I look at, behold (theorem; theory)" },
+                { greek: "λίθος, -ου, ὁ", definition: "a stone (monolith; lithograph)" },
+                { greek: "μακάριος, -α, -ον", definition: "blessed, happy (macarism, a beatitude)" },
+                { greek: "μηδέ", definition: "but not, nor, not even" },
+                { greek: "μόνος, -η, -ον", definition: "alone, only (monologue)" },
+                { greek: "ὅπως", definition: "in order that, that" },
+                { greek: "παιδίον, -ου, τό", definition: "an infant, child" },
+                { greek: "παραβολή, -ῆς, ἡ", definition: "a parable (parable)" },
+                { greek: "πείθω", definition: "I persuade" },
+                { greek: "σοφία, -ας, ἡ", definition: "wisdom (philosophy)" },
+                { greek: "χρόνος, -ου, ὁ", definition: "time (chronology)" },
+            ] },
+            { name: "46 to 49", count: 26, words: [
+                { greek: "ἁμαρτωλός, -όν", definition: "sinful; (as a noun), a sinner" },
+                { greek: "ἀπαγγέλλω", definition: "I announce, report" },
+                { greek: "ἀποδίδωμι", definition: "I give back, pay; (middle), I sell" },
+                { greek: "ἄρα", definition: "then, therefore" },
+                { greek: "ἔμπροσθεν", definition: "(gen.) in front of, before" },
+                { greek: "ἔρημος, -ον", definition: "solitary, deserted" },
+                { greek: "ἡ ἔρημος", definition: "(as a noun) the desert, wilderness (hermit)" },
+                { greek: "ἔτος, -ους, τό", definition: "a year (the Etesian winds in the Mediterranean region blow annually)" },
+                { greek: "καθίζω", definition: "I seat, sit (cf. cathedral, properly, the church which contains the bishop’s chair or seat)" },
+                { greek: "κακός, -ή, -όν", definition: "bad, evil (cacophony, discord)" },
+                { greek: "κρατέω", definition: "I grasp (cf. plutocratic, grasping wealth [πλοῦτος])" },
+                { greek: "κρίσις, -εως, ἡ", definition: "judgment (crisis)" },
+                { greek: "μικρός, -ά, -όν", definition: "small, little (microscope; omicron, little ‘o’)" },
+                { greek: "οὐκέτι", definition: "no longer" },
+                { greek: "παραλαμβάνω", definition: "I receive" },
+                { greek: "ποῦ", definition: "where? whither?" },
+                { greek: "πρό", definition: "(gen.) before (prologue)" },
+                { greek: "προσφέρω", definition: "I bring to, offer" },
+                { greek: "σπείρω", definition: "I sow" },
+                { greek: "σωτηρία, -ας, ἡ", definition: "salvation (soteriology)" },
+                { greek: "τρίτος, -η, -ον", definition: "third" },
+                { greek: "τυφλός, -ή, -όν", definition: "blind (typhlosis, medical term for blindness)" },
+                { greek: "φανερόω", definition: "I make manifest" },
+                { greek: "φόβος, -ου, ὁ", definition: "fear, terror (phobia)" },
+                { greek: "φυλακή, -ῆς, ἡ", definition: "a guard, a prison, a watch" },
+                { greek: "χρεία, -ας, ἡ", definition: "a need" },
+            ] },
+            { name: "42 to 45", count: 25, words: [
+                { greek: "ἁμαρτάνω", definition: "I sin (cf. hamartiology, the doctrine of sin)" },
+                { greek: "ἀνάστασις, -εως, ἡ", definition: "resurrection (Anastasia [girl’s name])" },
+                { greek: "ἅπας, -ασα, -αν", definition: "all" },
+                { greek: "γενεά, -ᾶς, ἡ", definition: "a generation (genealogy)" },
+                { greek: "δεύτερος, -α, -ον", definition: "second (Deuteronomy, the second [statement of the] law)" },
+                { greek: "δέω", definition: "I bind (diadem, literally, something bound around or across)" },
+                { greek: "διώκω", definition: "I pursue, persecute" },
+                { greek: "ἐγγίζω", definition: "I come near" },
+                { greek: "ἐπιγινώσκω", definition: "I come to know, recognize" },
+                { greek: "εὐλογέω", definition: "I bless (eulogize)" },
+                { greek: "θαυμάζω", definition: "I marvel, wonder at (cf. thaumaturge, a worker of miracles or wonders)" },
+                { greek: "θεραπεύω", definition: "I heal (therapeutic)" },
+                { greek: "θηρίον, -ου, τό", definition: "a wild beast (theriomorphic, having animal form; as, theriomorphic gods)" },
+                { greek: "θλῖψις, -εως, ἡ", definition: "tribulation" },
+                { greek: "κατοικέω", definition: "I inhabit, dwell" },
+                { greek: "λύω", definition: "I loose (cf. analysis, a resolving or unloosing into simple elements)" },
+                { greek: "μέρος, -ους, τό", definition: "a part (in biology, pentamerous, of five parts)" },
+                { greek: "ναός, -οῦ, ὁ", definition: "a temple" },
+                { greek: "ὅμοιος, -α, -ον", definition: "like (Homoiousian, one holding that Father and Son in the Godhead are of like [but not the same] substance; a semi-Arian)" },
+                { greek: "σεαυτοῦ", definition: "of thyself" },
+                { greek: "σήμερον", definition: "today" },
+                { greek: "σπέρμα, -ατος, τό", definition: "a seed (sperm)" },
+                { greek: "σταυρόω", definition: "I crucify" },
+                { greek: "τιμή, -ῆς, ἡ", definition: "honor, price (cf. Timothy, honoring God)" },
+                { greek: "φωνέω", definition: "I call (phonetic)" },
+            ] },
+            { name: "38 to 41", count: 29, words: [
+                { greek: "ἄξιος, -α, -ον ", definition: "worthy (axiom; in philosophy and psychology, axiological, pertaining to the science of values)" },
+                { greek: "ἅπτομαι", definition: "I touch" },
+                { greek: "διέρχομαι", definition: "I pass through" },
+                { greek: "δικαιόω", definition: "I justify, pronounce righteous" },
+                { greek: "ἐπιθυμία, -ας, ἡ", definition: "eager desire, passion" },
+                { greek: "ἐπιτίθημι", definition: "I lay upon" },
+                { greek: "ἐργάζομαι", definition: "I work (cf. energy)" },
+                { greek: "ἑτοιμάζω", definition: "I prepare" },
+                { greek: "εὐχαριστέω", definition: "I give thanks (Eucharist)" },
+                { greek: "θύρα, -ας, ἡ", definition: "a door" },
+                { greek: "ἱκανός, -ή, -όν", definition: "sufficient, able, considerable" },
+                { greek: "καινός, -ή, -όν", definition: "new" },
+                { greek: "κλαίω", definition: "I weep" },
+                { greek: "λογίζομαι", definition: "I account, reckon (cf. logic)" },
+                { greek: "μισέω", definition: "I hate (misogynist, a woman-hater)" },
+                { greek: "μνημεῖον, -ου, τό", definition: "a tomb, monument" },
+                { greek: "οἰκοδομέω", definition: "I build, edify" },
+                { greek: "ὀλίγος, -η, -ον", definition: "little, few (oligarchy, rule by the few)" },
+                { greek: "οὐαί", definition: "woe! alas!" },
+                { greek: "πάντοτε", definition: "always" },
+                { greek: "παραγίνομαι", definition: "I come, arrive" },
+                { greek: "παρίστημι", definition: "I am present, stand by" },
+                { greek: "πάσχω", definition: "I suffer" },
+                { greek: "περισσεύω", definition: "I abound, am rich" },
+                { greek: "πλανάω", definition: "I lead astray (planet, to the ancients, an apparently ‘wandering’ celestial body)" },
+                { greek: "πράσσω", definition: "I do, perform (praxis, practice, as opposed to theory)" },
+                { greek: "πρόβατον, -ου, τό", definition: "a sheep" },
+                { greek: "τέλος, -ους, τό", definition: "end (teleology, in philosophy, the view that developments are due to the purpose or design [end] that is served by them)" },
+                { greek: "χωρίς", definition: "(gen.) without, apart from" },
+            ] },
+            { name: "34 to 37", count: 29, words: [
+                { greek: "ἀγρός, -οῦ, ὁ", definition: "a field (akin to agrarian)" },
+                { greek: "ἄρτι", definition: "now, just now" },
+                { greek: "ἄρχων, -οντος, ὁ", definition: "a ruler (monarch, sole [μόνος] ruler)" },
+                { greek: "ἀσθενέω", definition: "I am weak" },
+                { greek: "βλασφημέω", definition: "I revile, blaspheme (blaspheme)" },
+                { greek: "βούλομαι", definition: "I wish, determine (akin to volition)" },
+                { greek: "διάβολος, -ον", definition: "slanderous, accusing falsely; (as a noun), the Accuser, the Devil (diabolical)" },
+                { greek: "διακονέω", definition: "I wait upon (especially at table), serve (generally), minister (cf. deacon)" },
+                { greek: "ἐκπορεύομαι", definition: "I go out" },
+                { greek: "ἐμαυτοῦ", definition: "of myself" },
+                { greek: "ἐπιστρέφω", definition: "I turn to, return" },
+                { greek: "εὐθέως", definition: "immediately" },
+                { greek: "καλῶς", definition: "well" },
+                { greek: "μαρτυρία, -ας, ἡ", definition: "a testimony, evidence (cf. martyrdom)" },
+                { greek: "μάρτυς, -υρος, ὁ", definition: "a witness (martyr)" },
+                { greek: "μετανοέω", definition: "I repent" },
+                { greek: "ὀπίσω", definition: "behind, after; (gen.) behind, after (cf. opisthograph, a manuscript written upon both the back and the front, Rev. 5:1)" },
+                { greek: "ὀργή, -ῆς, ἡ", definition: "anger" },
+                { greek: "οὖς, ὠτός, τό", definition: "an ear (otology)" },
+                { greek: "ὀφείλω", definition: "I owe, ought" },
+                { greek: "πειράζω", definition: "I test, tempt, attempt" },
+                { greek: "πέντε", definition: "five (Pentateuch)" },
+                { greek: "περιτομή, -ῆς, ἡ", definition: "circumcision" },
+                { greek: "προσευχή, -ῆς, ἡ", definition: "prayer" },
+                { greek: "πτωχός, -ή, -όν", definition: "poor; (as a noun), a poor man" },
+                { greek: "τέσσαρες, -ων", definition: "four (the Diatessaron of Tatian, a harmony of the four Gospels made about a.d. 170; literally, through [the] four)" },
+                { greek: "ὑποστρέφω", definition: "I return" },
+                { greek: "ὑποτάσσω", definition: "I subject, put in subjection (in grammar, hypotaxis, subordination of clauses)" },
+                { greek: "ὥσπερ", definition: "just as, even as" },
+            ] },
+            { name: "32 to 33", count: 22, words: [
+                { greek: "ἀναγινώσκω", definition: "I read" },
+                { greek: "ἀρνέομαι", definition: "I deny" },
+                { greek: "βιβλίον, -ου, τό", definition: "a book (Bible)" },
+                { greek: "δεικνύω, δείκνυμι", definition: "I show (in logic, apodeictic, of clear demonstration)" },
+                { greek: "διαθήκη, -ης, ἡ", definition: "a covenant" },
+                { greek: "διακονία, -ας, ἡ", definition: "wailing at table, (in a wider sense) service, ministry (diaconate)" },
+                { greek: "δυνατός, -ή, -όν", definition: "powerful, possible (cf. dynamite)" },
+                { greek: "ἐγγύς", definition: "near" },
+                { greek: "ἔξεστι", definition: "it is lawful" },
+                { greek: "ἐχθρός, -ά, -όν", definition: "hating; (as a noun), an enemy" },
+                { greek: "ἥλιος, -ου, ὁ", definition: "the sun (helium)" },
+                { greek: "ἱερεύς, -έως, ὁ", definition: "a priest (hierarchy)" },
+                { greek: "καυχάομαι", definition: "I boast" },
+                { greek: "μέλος, -ους, τό", definition: "a member" },
+                { greek: "μήτε", definition: "neither, nor" },
+                { greek: "οἶνος, -ου, ὁ", definition: "wine" },
+                { greek: "πλῆθος, -ους, τό", definition: "a multitude (cf. plethora)" },
+                { greek: "ποῖος, -α, -ον", definition: "what sort of? what?" },
+                { greek: "ποτήριον, -ου, τό", definition: "a cup" },
+                { greek: "συνέρχομαι", definition: "I come together" },
+                { greek: "ὑπομονή, -ῆς, ἡ", definition: "steadfast endurance" },
+                { greek: "φυλάσσω", definition: "I guard (cf. prophylactic)" },
+            ] },
+            { name: "30 to 31", count: 23, words: [
+                { greek: "ἀγοράζω", definition: "I buy (cf. agora, the market place)" },
+                { greek: "ἀκάθαρτος, -ον", definition: "unclean" },
+                { greek: "ἄνεμος, -ου, ὁ", definition: "a wind (anemone; anemometer)" },
+                { greek: "ἀρνίον, -ου, τό", definition: "a lamb" },
+                { greek: "γε", definition: "indeed, at least, really, even" },
+                { greek: "διδαχή, -ῆς, ἡ", definition: "teaching (cf. didactic)" },
+                { greek: "ἐλεέω", definition: "I have mercy (cf. eleemosynary; alms)" },
+                { greek: "ἐλπίζω", definition: "I hope" },
+                { greek: "ἐπικαλέω", definition: "I call, name; (middle), I invoke, appeal to" },
+                { greek: "ἐπιτιμάω", definition: "I rebuke, warn" },
+                { greek: "καθαρίζω", definition: "I cleanse (catharize)" },
+                { greek: "ναί", definition: "yea, truly, yes" },
+                { greek: "ὁμοίως", definition: "likewise" },
+                { greek: "παραγγέλλω", definition: "I command, charge" },
+                { greek: "παρέρχομαι", definition: "I pass by, pass away; I arrive" },
+                { greek: "παρρησία, -ας, ἡ", definition: "boldness (of speech), confidence" },
+                { greek: "πλήν", definition: "however, but, only; (gen.) except" },
+                { greek: "σκανδαλίζω", definition: "I cause to stumble (scandalize)" },
+                { greek: "σκότος, -ους, τό", definition: "darkness (scotoscope, a field-glass for seeing by night)" },
+                { greek: "συνείδησις, -εως, ἡ", definition: "conscience" },
+                { greek: "φαίνω", definition: "I shine, appear (phantom; phenomenon)" },
+                { greek: "φεύγω", definition: "I flee (cf. fugitive)" },
+                { greek: "φυλή, -ῆς, ἡ", definition: "a tribe (in zoology, phylum, one of the large fundamental divisions of the animal kingdom)" },
+            ] },
+            { name: "28 to 29", count: 25, words: [
+                { greek: "ἀληθινός, -ή, -όν", definition: "true" },
+                { greek: "γαμέω", definition: "I marry (in biology, gamete, a matured germ cell)" },
+                { greek: "γνῶσις, -εως, ἡ", definition: "wisdom (gnosis; Gnostic)" },
+                { greek: "διάκονος, -ου, ὁ, ἡ", definition: "a servant, administrator, deacon (deacon)" },
+                { greek: "ἐνδύω", definition: "I put on, clothe" },
+                { greek: "ἐπεί", definition: "when, since" },
+                { greek: "ἡγέομαι", definition: "I am chief; I think, regard" },
+                { greek: "θυσία, -ας, ἡ", definition: "a sacrifice" },
+                { greek: "ἴδε", definition: "see! behold!" },
+                { greek: "ἰσχυρός, -ά, -όν", definition: "strong" },
+                { greek: "ἰσχύω", definition: "I am strong, able" },
+                { greek: "κρίμα, -ατος, τό", definition: "judgment (cf. crisis)" },
+                { greek: "μάχαιρα, -ης, ἡ", definition: "a sword" },
+                { greek: "μισθός, -οῦ, ὁ", definition: "wages, reward" },
+                { greek: "μυστήριον, -ου, τό", definition: "a mystery (mystery)" },
+                { greek: "οὔπω", definition: "not yet" },
+                { greek: "παράκλησις, -εως, ἡ", definition: "an exhortation, consolation (cf. Paraclete, the Comforter, Helper, Advocate, or Counselor)" },
+                { greek: "πάσχα", definition: "indeclinable, τό, a passover (paschal)" },
+                { greek: "πλούσιος, -α, -ον", definition: "rich (cf. plutocratic)" },
+                { greek: "πόθεν", definition: "whence?" },
+                { greek: "ποτέ", definition: "at some time, once, ever" },
+                { greek: "προσκαλέομαι", definition: "I summon" },
+                { greek: "προφητεύω", definition: "I prophesy (cf. prophet)" },
+                { greek: "τελέω", definition: "I finish, fulfill (cf. teleology, in philosophy, the view that developments are due to the purpose or design [τέλος] that is served by them)" },
+                { greek: "φίλος, -η, -ον", definition: "loving; (as a noun), a friend (bibliophile)" },
+            ] },
+            { name: "26 to 27", count: 26, words: [
+                { greek: "ἁγιάζω", definition: "I sanctify (cf. hagiolatry, the worship of saints)" },
+                { greek: "ἀδελφή, -ῆς, ἡ", definition: "a sister" },
+                { greek: "ἀδικία, -ας, ἡ", definition: "unrighteousness" },
+                { greek: "ἀληθής, -ές", definition: "true" },
+                { greek: "ἀποκαλύπτω", definition: "I reveal (apocalypse)" },
+                { greek: "βαστάζω", definition: "I bear, carry" },
+                { greek: "ἐκεῖθεν", definition: "thence, from that place" },
+                { greek: "ἔλεος, -ους, τό", definition: "pity, mercy (cf. eleemosynary; alms)" },
+                { greek: "ἑορτή, -ῆς, ἡ", definition: "a feast" },
+                { greek: "ἥκω", definition: "I have come" },
+                { greek: "θυγάτηρ, -τρός, ἡ", definition: "a daughter" },
+                { greek: "ἰάομαι", definition: "I heal (cf. pediatrics, medical care of children [παῖς, παιδός])" },
+                { greek: "καταργέω", definition: "I bring to naught, abolish" },
+                { greek: "κελεύω", definition: "I order" },
+                { greek: "κώμη, -ης, ἡ", definition: "a village" },
+                { greek: "λυπέω", definition: "I grieve" },
+                { greek: "νικάω", definition: "I conquer (cf. Nicholas, victor over the people [λαός])" },
+                { greek: "ὀμνύω or ὄμνυμι", definition: "I swear, take an oath" },
+                { greek: "πόσος, -η, -ον", definition: "how great? how much?" },
+                { greek: "σός, σή, σόν", definition: "thy, thine" },
+                { greek: "σταυρός, -οῦ, ὁ", definition: "a cross" },
+                { greek: "στρατιώτης, -ου, ὁ", definition: "a soldier" },
+                { greek: "συνίημι", definition: "I understand" },
+                { greek: "φρονέω", definition: "I think" },
+                { greek: "χήρα, -ας, ἡ", definition: "a widow" },
+                { greek: "χώρα, -ας, ἡ", definition: "a country (chorography, describing, or description, of districts)" },
+            ] },
+            { name: "25 times", count: 17, words: [
+                { greek: "ἀδικέω", definition: "I wrong, do wrong" },
+                { greek: "ἀναβλέπω", definition: "I look up, receive sight" },
+                { greek: "γνωρίζω", definition: "I make known" },
+                { greek: "δέκα", definition: "ten (Decapolis, a league originally consisting of ten Greek cities, mostly SE. of the sea of Galilee)" },
+                { greek: "δένδρον, -ου, τό", definition: "a tree (rhododendron, lit. rose-tree)" },
+                { greek: "δουλεύω", definition: "I serve" },
+                { greek: "ἕνεκα, ἕνεκεν", definition: "(gen.) on account of" },
+                { greek: "καθαρός, -ά, -όν", definition: "clean (catharsis)" },
+                { greek: "μανθάνω", definition: "I learn (cf. mathematics)" },
+                { greek: "μήποτε", definition: "lest perchance" },
+                { greek: "νεφέλη, -ης, ἡ", definition: "a cloud (nephelometer)" },
+                { greek: "ὁμολογέω", definition: "I confess, profess" },
+                { greek: "οὗ", definition: "where" },
+                { greek: "πνευματικός, -ή, -όν", definition: "spiritual (pneumatic)" },
+                { greek: "πορνεία, -ας, ἡ", definition: "fornication (cf. pornography)" },
+                { greek: "προσέχω", definition: "I attend to, give heed to" },
+                { greek: "φιλέω", definition: "I love (cf. bibliophile)" },
+            ] },
+            { name: "24 times", count: 17, words: [
+                { greek: "ἀκοή, -ῆς, ἡ", definition: "hearing; a report" },
+                { greek: "ἀναιρέω", definition: "I take up; kill" },
+                { greek: "ἀσθένεια, -ας, ἡ", definition: "weakness (neurasthenia, nervous prostration)" },
+                { greek: "ἀσθενής, -ές", definition: "weak (cf. neurasthenia)" },
+                { greek: "διότι", definition: "because" },
+                { greek: "ἐκλεκτός, -ή, -όν", definition: "chosen, elect (cf. eclecticism)" },
+                { greek: "ἐπιστολή, -ῆς, ἡ", definition: "a letter (epistle)" },
+                { greek: "καταλείπω", definition: "I leave" },
+                { greek: "κατηγορέω", definition: "I accuse (cf. categorical)" },
+                { greek: "κεῖμαι", definition: "I lie, am laid" },
+                { greek: "νοῦς, νοός, ὁ", definition: "the mind (noetic)" },
+                { greek: "παῖς, παιδός, ὁ, ἡ", definition: "a boy, girl, child, servant (pedagogue, literally, child-leader)" },
+                { greek: "πάρειμι", definition: "I am present; I have arrived" },
+                { greek: "παρουσία, -ας, ἡ", definition: "presence, coming (especially Christ’s [second] coming in glory) (Parousia)" },
+                { greek: "περιβάλλω", definition: "I put around, clothe" },
+                { greek: "πίμπλημι", definition: "I fill" },
+                { greek: "σωτήρ, -ῆρος, ὁ", definition: "Saviour (cf. soteriology)" },
+            ] },
+            { name: "23 times", count: 21, words: [
+                { greek: "ἀμπελών, -ῶνος, ὁ", definition: "a vineyard" },
+                { greek: "ἀνάγω", definition: "I lead up; (middle), I put to sea, set sail" },
+                { greek: "ἄπιστος, -ον", definition: "unbelieving, faithless" },
+                { greek: "ἀστήρ, -έρος, ὁ", definition: "a star (aster)" },
+                { greek: "αὐξάνω", definition: "I cause to grow; increase (cf. auxiliary)" },
+                { greek: "γρηγορέω", definition: "I watch (Gregory)" },
+                { greek: "εἰκών, -όνος, ἡ", definition: "an Image (icon)" },
+                { greek: "ἐλεύθερος, -α, -ον", definition: "free" },
+                { greek: "ζῷον, -ου, τό", definition: "a living creature, an animal (zoology)" },
+                { greek: "θυσιαστήριον, -ου, τό", definition: "an altar" },
+                { greek: "κοπιάω", definition: "I toil" },
+                { greek: "κωλύω", definition: "I forbid, hinder" },
+                { greek: "λευκός, -ή, -όν", definition: "white (leukemia, literally, white blood [αἷμα])" },
+                { greek: "μιμνῄσκομαι", definition: "I remember (cf. mnemonics)" },
+                { greek: "νέος, -α, -ον", definition: "new, young (all words beginning with neo-)" },
+                { greek: "πεινάω", definition: "I hunger" },
+                { greek: "πέραν", definition: "(gen.) beyond" },
+                { greek: "περισσός, -ή, -όν", definition: "excessive, abundant" },
+                { greek: "σκεῦος, -ους, τό", definition: "a vessel; (plural), goods" },
+                { greek: "τελειόω", definition: "I fulfill, make perfect" },
+                { greek: "χαρίζομαι", definition: "I give freely, forgive" },
+            ] },
+            { name: "22 times", count: 17, words: [
+                { greek: "δέομαι", definition: "I beseech" },
+                { greek: "δοκιμάζω", definition: "I prove, approve" },
+                { greek: "θεάομαι", definition: "I behold (theater)" },
+                { greek: "καθεύδω", definition: "I sleep" },
+                { greek: "καθίστημι", definition: "I set, constitute" },
+                { greek: "κατεργάζομαι", definition: "I work out" },
+                { greek: "κοιλία, -ας, ἡ", definition: "the belly (stomach or intestines, or both); womb (coeliac, pertaining to the abdomen)" },
+                { greek: "μετάνοια, -ας, ἡ", definition: "repentance" },
+                { greek: "μηκέτι", definition: "no longer" },
+                { greek: "νυνί", definition: "now" },
+                { greek: "πληγή, -ῆς, ἡ", definition: "a blow, wound, plague (plague)" },
+                { greek: "πλοῦτος, -ου, ὁ", definition: "wealth (plutocrat)" },
+                { greek: "πωλέω", definition: "I sell (cf. monopoly)" },
+                { greek: "στρέφω", definition: "I turn (strophe)" },
+                { greek: "συνέδριον, -ου, τό", definition: "a council, the Sanhedrin (Sanhedrin)" },
+                { greek: "χιλίαρχος, -ου, ὁ", definition: "a military tribune, captain (chiliarch)" },
+                { greek: "ὡσεί", definition: "as, like, about" },
+            ] },
+            { name: "21 times", count: 20, words: [
+                { greek: "ἀγνοέω", definition: "I do not know (agnostic)" },
+                { greek: "ἀντί", definition: "(gen.) instead of, for (all words beginning with anti-)" },
+                { greek: "ἀργύριον, -ου, τό", definition: "silver (in pharmacy, Argyrol, the trade-name of a silver-protein compound)" },
+                { greek: "βασιλεύω", definition: "I reign" },
+                { greek: "γένος, -ους, τό", definition: "race, kind (akin to genus)" },
+                { greek: "διδασκαλία, -ας, ἡ", definition: "teaching" },
+                { greek: "ἑκατοντάρχης, -ου, ὁ", definition: "a centurion" },
+                { greek: "ἐκλέγομαι", definition: "I pick out, choose (eclectic)" },
+                { greek: "εὐδοκέω", definition: "I think it good, am well pleased with" },
+                { greek: "ἐφίστημι", definition: "I stand over, come upon" },
+                { greek: "θερίζω", definition: "I reap" },
+                { greek: "λατρεύω", definition: "I serve, worship (cf. Mariolatry)" },
+                { greek: "μνημονεύω", definition: "I remember (cf. mnemonics)" },
+                { greek: "παράπτωμα, -ατος, τό", definition: "a trespass" },
+                { greek: "πειρασμός, -οῦ, ὁ", definition: "temptation" },
+                { greek: "τελώνης, -ου, ὁ", definition: "a taxgatherer" },
+                { greek: "τεσσαράκοντα", definition: "indeclinable, forty" },
+                { greek: "τιμάω", definition: "I honor (Timothy, honoring God)" },
+                { greek: "ὑπακούω", definition: "I obey" },
+                { greek: "χιλιάς, -άδος, ἡ", definition: "a thousand (chiliasm, millenarianism)" },                
+            ] },
+            { name: "20 times", count: 15, words: [
+                { greek: "αἰτία, -ας, ἡ", definition: "a cause, accusation (etiology, the investigation of causes)" },
+                { greek: "ἀκροβυστία, -ας, ἡ", definition: "uncircumcision" },
+                { greek: "βάπτισμα, -ατος, τό", definition: "baptism (baptism)" },
+                { greek: "γονεύς, -έως, ὁ", definition: "a parent (cf. gonad)" },
+                { greek: "ἐνεργέω", definition: "I work, effect (cf. energy)" },
+                { greek: "ἐπίγνωσις, -εως, ἡ", definition: "knowledge" },
+                { greek: "ἰχθύς, -ύος, ὁ", definition: "a fish (ichthyology)" },
+                { greek: "κρύπτω", definition: "I conceal (cryptic)" },
+                { greek: "μαρτύριον, -ου, τό", definition: "a testimony, witness, proof (cf. martyrdom)" },
+                { greek: "ξύλον, -ου, τό", definition: "wood, tree (xylophone)" },
+                { greek: "προάγω", definition: "I lead forth, go before" },
+                { greek: "σκηνή, -ῆς, ἡ", definition: "a tent, tabernacle (scene)" },
+                { greek: "σοφός, -ή, -όν", definition: "wise (cf. sophomore, literally, a wise fool [μωρός])" },
+                { greek: "ὑπηρέτης, -ου, ὁ", definition: "a servant, assistant" },
+                { greek: "ὑψόω", definition: "I lift up, exalt (cf. hypsophobia, fear of high places)" },
+            ] },
+            { name: "19 times", count: 24, words: [
+                { greek: "ἀπέχω", definition: "I have received (payment); I am distant" },
+                { greek: "γεωργός, -οῦ, ὁ", definition: "a farmer (George)" },
+                { greek: "διακρίνω", definition: "I discriminate, judge; (middle), I doubt" },
+                { greek: "δῶρον, -ου, τό", definition: "a gift (Theodore, Dorothea [or Dorothy], gift of God)" },
+                { greek: "ἐπαίρω", definition: "I lift up" },
+                { greek: "ἐπάνω", definition: "above; (gen.) over" },
+                { greek: "ἐπιβάλλω", definition: "I lay upon" },
+                { greek: "ἐπιλαμβάνομαι", definition: "I take hold of" },
+                { greek: "ἐπουράνιος, -ιον", definition: "heavenly" },
+                { greek: "ἡγεμών, -όνος, ὁ", definition: "a leader, a (Roman) governor (cf. hegemony, leadership, especially of one state of a confederacy)" },
+                { greek: "κοινωνία, -ας, ἡ", definition: "fellowship; contribution" },
+                { greek: "κρείσσων, κρείττων, -ονος", definition: "better" },
+                { greek: "κριτής, -οῦ, ὁ", definition: "a judge (critic)" },
+                { greek: "κτίσις, -εως, ἡ", definition: "creation, creature" },
+                { greek: "μεριμνάω", definition: "I am anxious, distracted" },
+                { greek: "μέχρι or μέχρις", definition: "until; (gen.) as far as" },
+                { greek: "νηστεύω", definition: "I fast" },
+                { greek: "παλαιός, -ά, -όν", definition: "old (palaeography)" },
+                { greek: "παρατίθημι", definition: "I set before; (middle), I entrust" },
+                { greek: "πότε", definition: "when?" },
+                { greek: "προφητεία, -ας, ἡ", definition: "a prophecy (prophecy)" },
+                { greek: "τέλειος, -α, -ον", definition: "complete, perfect, mature (cf. teleology)" },
+                { greek: "τοσοῦτος, -αύτη, -οῦτον, -οῦτο", definition: "so great, so much; (plural), so many" },
+                { greek: "τρέχω", definition: "I run" },
+            ] },
+            { name: "18 times", count: 36, words: [
+                { greek: "ἀληθῶς", definition: "truly" },
+                { greek: "ἀνάγκη, -ης, ἡ", definition: "necessity" },
+                { greek: "ἀποκάλυψις, -εως, ἡ", definition: "a revelation (apocalypse)" },
+                { greek: "ἀπώλεια, -ας, ἡ", definition: "destruction (cf. Apollyon)" },
+                { greek: "ἀριθμός, -οῦ, ὁ", definition: "a number (arithmetic)" },
+                { greek: "βλασφημία, -ας, ἡ", definition: "reproach, blasphemy (blasphemy)" },
+                { greek: "δέησις, -εως, ἡ", definition: "an entreaty" },
+                { greek: "δεσμός, -οῦ, ὁ", definition: "a fetter, bond" },
+                { greek: "εἰσπορεύομαι", definition: "I enter" },
+                { greek: "ἐλέγχω", definition: "I convict, reprove (elenchus, a logical refutation)" },
+                { greek: "ἐμβαίνω", definition: "I embark" },
+                { greek: "ἐπιτρέπω", definition: "I permit" },
+                { greek: "θυμός, -οῦ, ὁ", definition: "wrath" },
+                { greek: "καταγγέλλω", definition: "I proclaim" },
+                { greek: "κατακρίνω", definition: "I condemn" },
+                { greek: "κατέχω", definition: "I hold back, hold fast" },
+                { greek: "κενός, -ή, -όν", definition: "empty, vain (cenotaph, sepulchral monument to a person whose body is not contained in it)" },
+                { greek: "κληρονομέω", definition: "I inherit" },
+                { greek: "κοιμάομαι", definition: "I sleep, fall asleep (cemetery, literally, a sleeping chamber)" },
+                { greek: "κόπος, -ου, ὁ", definition: "labor, trouble" },
+                { greek: "κρυπτός, -ή, -όν", definition: "hidden (cryptic)" },
+                { greek: "μήν, μηνός, ὁ", definition: "a month (menology, a calendar, especially that of the Greek Church, provided with short biographies of saints)" },
+                { greek: "μήτι", definition: "interrogative particle in questions expecting a negative answer" },
+                { greek: "οἰκοδομή, -ῆς, ἡ", definition: "a building; edification" },
+                { greek: "παράχρημα", definition: "immediately" },
+                { greek: "ποιμήν, -ένος, ὁ", definition: "a shepherd (poimenic, pertaining to pastoral theology)" },
+                { greek: "πόλεμος, -ου, ὁ", definition: "a war (polemics)" },
+                { greek: "προστίθημι", definition: "I add, add to" },
+                { greek: "πυλών, -ῶνος, ὁ", definition: "a vestibule, gateway (pylon)" },
+                { greek: "στέφανος, -ου, ὁ", definition: "a crown (Stephen)" },
+                { greek: "ταράσσω", definition: "I trouble" },
+                { greek: "τίκτω", definition: "I give birth to" },
+                { greek: "ὑποκριτής, -οῦ, ὁ", definition: "a hypocrite" },
+                { greek: "ὑπομένω", definition: "I tarry; I endure" },
+                { greek: "φανερός, -ά, όν", definition: "manifest" },
+                { greek: "χρύσεος, -α, -ον, χρυσοῦς, -ῆ, -οῦν", definition: "golden (chrysanthemum, literally, golden flower)" },
+            ] },
+            { name: "17 times", count: 27, words: [
+                { greek: "ἀρέσκω", definition: "I please" },
+                { greek: "αὑτοῦ", definition: "of himself" },
+                { greek: "ἄφεσις, -εως, ἡ", definition: "a sending away, remission (aphesis, the gradual loss of a short unaccented vowel at the beginning of a word; as ‘squire’ for ‘esquire’)" },
+                { greek: "βρῶμα, -ατος, τό", definition: "food" },
+                { greek: "γάμος, -ου, ὁ", definition: "a marriage, wedding (bigamy, double marriage; digamy, second marriage after the decease of the first spouse, condemned as a sin by certain Church Fathers)" },
+                { greek: "δέσμιος, -ου, ὁ", definition: "a prisoner" },
+                { greek: "ἑκατόν", definition: "one hundred (hecatomb, great public sacrifice, properly of 100 oxen [βοῦς])" },
+                { greek: "ἐξίστημι", definition: "I amaze, am amazed" },
+                { greek: "ἐπαύριον", definition: "on the morrow" },
+                { greek: "ἐπιμένω", definition: "I continue" },
+                { greek: "ἕτοιμος, -η, -ον", definition: "ready, prepared" },
+                { greek: "θησαυρός, -οῦ, ὁ", definition: "a storehouse, treasure (thesaurus)" },
+                { greek: "ἵππος, -ου, ὁ", definition: "a horse (hippopotamus, literally, a river-horse)" },
+                { greek: "καθάπερ", definition: "even as, as" },
+                { greek: "καταλύω", definition: "I destroy; I lodge (cf. catalyze)" },
+                { greek: "κερδαίνω", definition: "I gain" },
+                { greek: "νίπτω", definition: "I wash" },
+                { greek: "νυμφίος, -ου, ὁ", definition: "a bridegroom (akin to nuptial)" },
+                { greek: "περιτέμνω", definition: "I circumcise" },
+                { greek: "πλήρωμα, -ατος, τό", definition: "fullness (pleroma, in Valentinian Gnosticism, the world of light, including the body of eons)" },
+                { greek: "πλησίον", definition: "near; (as a noun), a neighbor" },
+                { greek: "πολλάκις", definition: "often" },
+                { greek: "ποταμός, -οῦ, ὁ", definition: "a river (hippopotamus, literally, a river-horse)" },
+                { greek: "ῥύομαι", definition: "I rescue, deliver" },
+                { greek: "σκοτία, -ας, ἡ", definition: "darkness (scotoscope, a field-glass for seeing by night)" },
+                { greek: "χάρισμα, -ατος, τό", definition: "a gift (freely and graciously given) (charism, a special spiritual gift or power divinely conferred; 1 Cor. 12)" },
+                { greek: "ὡσαύτως", definition: "likewise" },
+            ] },
+            { name: "16 times", count: 39, words: [
+                { greek: "ἀθετέω", definition: "I reject (athetize, to reject a text or passage as spurious)" },
+                { greek: "ἀνακρίνω", definition: "I examine" },
+                { greek: "ἀπάγω", definition: "I lead away" },
+                { greek: "δεῖπνον, -ου, τό", definition: "a supper" },
+                { greek: "δηνάριον, -ου, τό", definition: "a denarius (denarius)" },
+                { greek: "διαλογίζομαι", definition: "I debate" },
+                { greek: "διατάσσω", definition: "I command" },
+                { greek: "διψάω", definition: "I thirst (cf. dipsomania, a craving for alcohol)" },
+                { greek: "ἐκτείνω", definition: "I stretch forth (cf. extend)" },
+                { greek: "ἐκχέω", definition: "I pour out" },
+                { greek: "ἐντέλλομαι", definition: "I command" },
+                { greek: "ἔπειτα", definition: "then" },
+                { greek: "ἐπιθυμέω", definition: "I desire" },
+                { greek: "ἐργάτης, -ου, ὁ", definition: "a workman (cf. energy)" },
+                { greek: "εὐλογία, -ας, ἡ", definition: "a blessing (eulogy)" },
+                { greek: "ζῆλος, -ου, ὁ", definition: "zeal, jealousy (zeal)" },
+                { greek: "θεμέλιος, -ου, ὁ", definition: "a foundation" },
+                { greek: "κακῶς", definition: "badly" },
+                { greek: "κατέρχομαι", definition: "I come down, go down" },
+                { greek: "κλείω", definition: "I shut" },
+                { greek: "κλέπτης, -ου, ὁ", definition: "a thief (kleptomaniac)" },
+                { greek: "οὐδέποτε", definition: "never" },
+                { greek: "πάθημα, -ατος, τό", definition: "suffering (cf. pathological; apathy)" },
+                { greek: "παρέχω", definition: "I offer, afford" },
+                { greek: "πέτρα, -ας, ἡ", definition: "a rock (petrify)" },
+                { greek: "πλήρης, -ες", definition: "full" },
+                { greek: "προσδοκάω", definition: "I wait for" },
+                { greek: "ῥαββί", definition: "indeclinable, ὁ, (my) master (rabbi)" },
+                { greek: "ῥίζα, -ης, ἡ", definition: "a root (cf. rhizome)" },
+                { greek: "συκῆ, -ῆς, ἡ", definition: "a fig tree (sycophant, a flatterer, literally, a fig-shower [the reason for the name is not definitely known])" },
+                { greek: "συλλαμβάνω", definition: "I take, conceive" },
+                { greek: "συνίστημι, συνιστάνω", definition: "(transitive tenses), I commend; (intransitive tenses), I stand with, consist" },
+                { greek: "σφραγίς, -ῖδος, ἡ", definition: "a seal (sphragistics, the science of seals, their history, age, distinctions, etc.)" },
+                { greek: "τέρας, -ατος, τό", definition: "a wonder" },
+                { greek: "τολμάω", definition: "I dare" },
+                { greek: "τροφή, -ῆς, ἡ", definition: "food (cf. atrophy, wasting due to malnutrition)" },
+                { greek: "ὑστερέω", definition: "I lack" },
+                { greek: "χορτάζω", definition: "(passive), I eat to the full, am satisfied, am filled" },
+                { greek: "ὦ", definition: "O!" },
+            ] },
+            { name: "15 times", count: 37, words: [
+                { greek: "ἀνέχομαι", definition: "I endure" },
+                { greek: "γεύομαι", definition: "I taste (cf. gusto, disgust)" },
+                { greek: "γνωστός, -ή, -όν", definition: "known" },
+                { greek: "γυμνός, -ή, -όν", definition: "naked (gymnasium)" },
+                { greek: "δέρω", definition: "I beat" },
+                { greek: "διαμαρτύρομαι", definition: "I testify solemnly" },
+                { greek: "ἐλαία, -ας, ἡ", definition: "an olive tree" },
+                { greek: "ἐπαγγέλλομαι", definition: "I promise" },
+                { greek: "εὐσέβεια, -ας, ἡ", definition: "piety, godliness (Eusebius)" },
+                { greek: "εὐχαριστία, -ας, ἡ", definition: "thanksgiving (Eucharist)" },
+                { greek: "θρίξ, τριχός, ἡ", definition: "a hair (trichina, a thread-like worm)" },
+                { greek: "καταλαμβάνω", definition: "I overtake, apprehend" },
+                { greek: "κατεσθίω", definition: "I eat up, devour" },
+                { greek: "κλάω", definition: "I break (iconoclast, literally, a breaker of images)" },
+                { greek: "κληρονόμος, -ου, ὁ", definition: "an heir" },
+                { greek: "κτίζω", definition: "I create" },
+                { greek: "λῃστής, -οῦ, ὁ", definition: "a robber" },
+                { greek: "λύπη, -ης, ἡ", definition: "pain, grief" },
+                { greek: "μοιχεύω", definition: "I commit adultery" },
+                { greek: "νήπιος, -ου, ὁ", definition: "an infant, child" },
+                { greek: "νομίζω", definition: "I suppose" },
+                { greek: "ξηραίνω", definition: "I dry up (cf. xerophagy, among early Christians, the practice of living on a diet of dry food, especially during Lent and other fasts)" },
+                { greek: "ὅθεν", definition: "whence, wherefore" },
+                { greek: "οἰκουμένη, -ης, ἡ", definition: "the (inhabited) world (cf. ecumenical)" },
+                { greek: "ὁμοιόω", definition: "I make like, liken (homoeoteleuton, the occurrence of the same or similar endings of lines, a frequent source of error in copied manuscripts)" },
+                { greek: "παρθένος, -ου, ἡ", definition: "a virgin (parthenogenesis)" },
+                { greek: "παύομαι", definition: "I cease" },
+                { greek: "ποτίζω", definition: "I give drink to (akin to potion)" },
+                { greek: "σαλεύω", definition: "I shake" },
+                { greek: "σκάνδαλον, -ου, τό", definition: "a cause of stumbling (scandal)" },
+                { greek: "συμφέρω", definition: "I bring together; (impersonally), it is profitable" },
+                { greek: "σφραγίζω", definition: "I seal (cf. sphragistics, the science of seals, their history, age, distinctions, etc.)" },
+                { greek: "τράπεζα, -ης, ἡ", definition: "a table (trapeze, so called from the square or rectangle formed by the ropes and crossbar)" },
+                { greek: "τύπος, -ου, ὁ", definition: "mark, example (type)" },
+                { greek: "ὑπακοή, -ῆς, ἡ", definition: "obedience" },
+                { greek: "χόρτος, -ου, ὁ", definition: "grass, hay" },
+                { greek: "ὠφελέω", definition: "I profit" },
+            ] },
+            { name: "14 times", count: 45, words: [
+                { greek: "ἄκανθαι, -ῶν, αἱ", definition: "thorns (the acanthus plant)" },
+                { greek: "ἀλλότριος, -α, -ον", definition: "another’s, strange" },
+                { greek: "ἀμφότεροι, -αι, -α", definition: "both" },
+                { greek: "ἀνάκειμαι", definition: "I recline (at meals)" },
+                { greek: "ἀναχωρέω", definition: "I depart" },
+                { greek: "ἀνθίστημι", definition: "I resist" },
+                { greek: "ἀνομία, -ας, ἡ", definition: "lawlessness" },
+                { greek: "ἅπαξ", definition: "once, once for all" },
+                { greek: "ἀπειθέω", definition: "I disbelieve, disobey" },
+                { greek: "ἀτενίζω", definition: "I look intently, gaze upon intently" },
+                { greek: "αὔριον", definition: "tomorrow" },
+                { greek: "ἀφίστημι", definition: "I withdraw, depart" },
+                { greek: "γράμμα, -ατος, τό", definition: "a letter (of the alphabet); plural, writings" },
+                { greek: "διαλογισμός, -οῦ, ὁ", definition: "a reasoning, questioning (cf. dialogue)" },
+                { greek: "ἕκτος, -η, -ον", definition: "sixth" },
+                { greek: "ἐλάχιστος, -η, -ον", definition: "least" },
+                { greek: "ἐνιαυτός, -οῦ, ὁ", definition: "a year" },
+                { greek: "ἐπίσταμαι", definition: "I understand (cf. epistemology, the science of the methods and grounds of knowledge)" },
+                { greek: "εὐφραίνω", definition: "I rejoice (cf. Euphrosyne, one of the three Graces in Greek mythology)" },
+                { greek: "κατανοέω", definition: "I observe" },
+                { greek: "κληρονομία, -ας, ἡ", definition: "an inheritance" },
+                { greek: "κοινός, -ή, -όν", definition: "common, unclean (ceremonially)" },
+                { greek: "κοινόω", definition: "I make common, I defile (ceremonially) (cf. cenobite, one dwelling in a convent community [where all is held in common])" },
+                { greek: "κωφός, -ή, -όν", definition: "deaf, dumb" },
+                { greek: "λύχνος, -ου, ὁ", definition: "a lamp" },
+                { greek: "μακρόθεν", definition: "from afar, afar" },
+                { greek: "μακροθυμία, -ας, ἡ", definition: "long-suffering, patience, forbearance" },
+                { greek: "μερίζω", definition: "I divide" },
+                { greek: "μέτρον, -ου, τό", definition: "a measure (meter)" },
+                { greek: "μύρον, -ου, τό", definition: "ointment" },
+                { greek: "μωρός, -ά, -όν", definition: "foolish (moron)" },
+                { greek: "νοέω", definition: "I understand (noetic)" },
+                { greek: "ξένος, -η, -ον", definition: "strange; (as a noun), a stranger, host (the chemical element xenon)" },
+                { greek: "οἷος, -α, -ον", definition: "such as" },
+                { greek: "ὄφις, -εως, ὁ", definition: "a serpent (Ophites, Gnostics who revered the serpent as the symbol of hidden, divine wisdom)" },
+                { greek: "ὀψία, -ας, ἡ", definition: "evening" },
+                { greek: "πετεινά, -ῶν, τά", definition: "birds" },
+                { greek: "προσδέχομαι", definition: "I receive, wait for" },
+                { greek: "σεισμός, -οῦ, ὁ", definition: "an earthquake (seismograph)" },
+                { greek: "σῖτος, -ου, ὁ", definition: "wheat (parasite, literally, one who sits by [παρά] another’s food and eats at his expense)" },
+                { greek: "στηρίζω", definition: "I establish" },
+                { greek: "τάλαντον, -ου, τό", definition: "a talent (talent)" },
+                { greek: "ταπεινόω", definition: "I humble" },
+                { greek: "φρόνιμος, -η, -ον", definition: "prudent" },
+                { greek: "χωλός, -ή, -όν", definition: "lame" },
+            ] },
+            { name: "13 times", count: 44, words: [
+                { greek: "ἀνά", definition: "(acc.) upwards, up; (with numerals), each" },
+                { greek: "ἀνὰ μέσον", definition: "into the midst, among" },
+                { greek: "ἀναγγέλλω", definition: "I announce, report" },
+                { greek: "ἀναλαμβάνω", definition: "I take up" },
+                { greek: "ἀναστροφή, -ῆς, ἡ", definition: "conduct" },
+                { greek: "ἄνωθεν", definition: "from above, again" },
+                { greek: "ἁρπάζω", definition: "I seize (cf. harpoon, harpy)" },
+                { greek: "βοάω", definition: "I cry aloud" },
+                { greek: "βουλή, -ῆς, ἡ", definition: "counsel, purpose" },
+                { greek: "δαιμονίζομαι", definition: "I am demon possessed (demonize)" },
+                { greek: "διαλέγομαι", definition: "I dispute (dialectics)" },
+                { greek: "διαφέρω", definition: "I differ" },
+                { greek: "δράκων, -οντος, ὁ", definition: "a dragon (dragon)" },
+                { greek: "εἶτα", definition: "then" },
+                { greek: "ἐκπλήσσομαι", definition: "I am astonished, amazed" },
+                { greek: "ἐλεημοσύνη, -ης, -ἡ", definition: "alms (eleemosynary; alms)" },
+                { greek: "ἐμπαίζω", definition: "I mock" },
+                { greek: "ἕξ", definition: "six (Hexapla, the edition of the Old Testament compiled by Origen, in the third century, comprising six columns)" },
+                { greek: "ἐξαποστέλλω", definition: "I send forth" },
+                { greek: "ἔξωθεν", definition: "(gen.) from without" },
+                { greek: "ἐπιζητέω", definition: "I seek for" },
+                { greek: "ἐπιπίπτω", definition: "I fall upon" },
+                { greek: "ζύμη, -ης, ἡ", definition: "leaven (enzyme)" },
+                { greek: "θερισμός, -οῦ, ὁ", definition: "harvest (cf. thermal)" },
+                { greek: "θύω", definition: "I sacrifice, kill (thyme)" },
+                { greek: "καπνός, -οῦ, ὁ", definition: "smoke" },
+                { greek: "καταισχύνω", definition: "I put to shame" },
+                { greek: "κατακαίω", definition: "I burn up" },
+                { greek: "καταντάω", definition: "I come to" },
+                { greek: "καταρτίζω", definition: "I mend, fit, perfect" },
+                { greek: "κλέπτω", definition: "I steal (cf. cleptomania)" },
+                { greek: "παιδεύω", definition: "I teach, chastise (cf. pedagogue)" },
+                { greek: "παιδίσκη, -ης, ἡ", definition: "a maid servant" },
+                { greek: "παράδοσις, -εως, ἡ", definition: "a tradition" },
+                { greek: "πρίν", definition: "before" },
+                { greek: "πώς", definition: "at all, somehow, in any way" },
+                { greek: "συνεργός, -οῦ, ὁ", definition: "a fellow worker (cf. synergism, the semi-Pelagian doctrine that there are two efficient agents in regeneration, namely the human will and the divine Spirit, which, in the strict sense of the term, co-operate)" },
+                { greek: "τίμιος, -α, -ον", definition: "precious, honorable, (cf. Timothy, honoring God)" },
+                { greek: "τρόπος, -ου, ὁ", definition: "manner, way (in rhetoric, trope, a figurative use of a word)" },
+                { greek: "τύπτω", definition: "I smite (cf. tympanum, the middle ear)" },
+                { greek: "ὕψιστος, -η, -ον", definition: "highest" },
+                { greek: "φύσις, -εως, ἡ", definition: "nature (physics)" },
+                { greek: "χρυσίον, -ου, τό", definition: "gold (cf. chrysanthemum, literally, golden flower)" },
+                { greek: "χωρίζω", definition: "I separate, depart" },
+            ] },
+            { name: "12 times", count: 60, words: [
+                { greek: "ἄδικος, -ον", definition: "unjust" },
+                { greek: "ἀλέκτωρ, -ορος, ὁ", definition: "a cock (cf. alectryomancy, divination by means of a cock encircled by grains of corn placed on letters of the alphabet, the letters being then put together in the order in which the grains were eaten)" },
+                { greek: "ἀναπαύω", definition: "I refresh; (middle), I take rest" },
+                { greek: "ἀναπίπτω", definition: "I recline" },
+                { greek: "ἀπαρνέομαι", definition: "I deny" },
+                { greek: "ἀσκός, -οῦ, ὁ", definition: "a (leather) bottle, wine-skin (in botany, ascidium, the leaf of the pitcher plant)" },
+                { greek: "αὐλή, -ῆς, ἡ", definition: "a court (in Austro-German history, the Aulic Council)" },
+                { greek: "βαπτιστής, -οῦ, ὁ", definition: "baptist (Baptist)" },
+                { greek: "βασανίζω", definition: "I torment" },
+                { greek: "βῆμα, -ατος, τό", definition: "judgment seat (in ecclesiastical architecture, bema, the inner part of the chancel, reserved for the clergy)" },
+                { greek: "βροντή, -ῆς, ἡ", definition: "thunder (brontosaurus, literally, thunder-lizard)" },
+                { greek: "γέεννα, -ης, ἡ", definition: "gehenna (Gehenna)" },
+                { greek: "γόνυ, -ατος, τό", definition: "a knee (akin to genuflect)" },
+                { greek: "δεῦτε", definition: "come!" },
+                { greek: "διάνοια, -ας, ἡ", definition: "the mind, understanding, a thought" },
+                { greek: "δίκτυον, -ου, τό", definition: "a net" },
+                { greek: "ἔθος, -ους, τό", definition: "a custom (ethics)" },
+                { greek: "ἐξάγω", definition: "I lead out" },
+                { greek: "ἐξουθενέω", definition: "I despise" },
+                { greek: "ἔσωθεν", definition: "from within, within" },
+                { greek: "καίω", definition: "I burn (caustic)" },
+                { greek: "κἀκεῖ (= καὶ ἐκεῖ)", definition: "and there" },
+                { greek: "κάλαμος, -ου, ὁ", definition: "a reed (calamus)" },
+                { greek: "κατάκειμαι", definition: "I lie down, lie sick, recline (at meals)" },
+                { greek: "κολλάομαι", definition: "I join, cleave to (cf. colloid)" },
+                { greek: "κομίζω", definition: "I receive" },
+                { greek: "κράτος, -ους, τό", definition: "power, dominion (cf. democracy, rule of the people)" },
+                { greek: "λίαν", definition: "greatly" },
+                { greek: "λιμός, -οῦ, ὁ", definition: "hunger, famine (in medicine, limosis, excessive and morbid hunger)" },
+                { greek: "λυχνία, -ας, ἡ", definition: "a lampstand" },
+                { greek: "μάλιστα", definition: "especially" },
+                { greek: "ὀδούς, -όντος, ὁ", definition: "a tooth (odontology)" },
+                { greek: "οἰκοδεσπότης, -ου, ὁ", definition: "a householder" },
+                { greek: "ὅραμα, -ατος, τό", definition: "a vision (panorama, a complete [πᾶν] view)" },
+                { greek: "ὅρια, -ων, τά", definition: "boundaries (cf. horizon)" },
+                { greek: "παραιτέομαι", definition: "I make excuse, refuse" },
+                { greek: "πιάζω", definition: "I take" },
+                { greek: "πληθύνω", definition: "I multiply" },
+                { greek: "πλουτέω", definition: "I am rich (cf. plutocrat)" },
+                { greek: "πόρνη, -ης, ἡ", definition: "a prostitute (pornography)" },
+                { greek: "πρόθεσις, -εως, ἡ", definition: "a setting forth; a purpose (in the Eastern Church, the prothesis, referring to the placing of the eucharistic elements)" },
+                { greek: "προσλαμβάνω", definition: "I receive" },
+                { greek: "πρωΐ", definition: "in the morning, early" },
+                { greek: "πῶλος, -ου, ὁ", definition: "a colt" },
+                { greek: "ῥάβδος, -ου, ἡ", definition: "a staff, rod (rhabdomancy, divination by rods)" },
+                { greek: "σαλπίζω", definition: "I sound a trumpet" },
+                { greek: "σπλαγχνίζομαι", definition: "I have compassion (splanchnic)" },
+                { greek: "σπουδή, -ῆς, ἡ", definition: "haste, diligence" },
+                { greek: "στήκω", definition: "I stand, stand fast" },
+                { greek: "συνέχω", definition: "I hold fast, oppress" },
+                { greek: "ταχύ", definition: "quickly (tachygraphy, stenography, especially that of the ancient Greeks and Romans)" },
+                { greek: "τρίς", definition: "thrice (in liturgics, the Trisagion)" },
+                { greek: "τυγχάνω", definition: "I obtain, happen" },
+                { greek: "ὑγιαίνω", definition: "I am in good health (cf. hygiene)" },
+                { greek: "ὑγιής, -ές", definition: "whole, healthy (cf. hygiene)" },
+                { greek: "ὑψηλός, -ή, -όν", definition: "high" },
+                { greek: "φιάλη, -ης, ἡ", definition: "a cup, bowl (phial, vial)" },
+                { greek: "φονεύω", definition: "I kill, murder" },
+                { greek: "χοῖρος, -ου, ὁ", definition: "a pig" },
+                { greek: "ψεύδομαι", definition: "I lie (pseudo-)" },
+            ] },
+            { name: "11 times", count: 76, words: [
+                { greek: "ἀγαλλιάω", definition: "I exult" },
+                { greek: "ἀγορά, -ᾶς, ἡ", definition: "a market-place (agora)" },
+                { greek: "ἅλυσις, -εως, ἡ", definition: "a chain" },
+                { greek: "ἀναστρέφω", definition: "I return; I live" },
+                { greek: "ἀπιστία, -ας, ἡ", definition: "unbelief" },
+                { greek: "ἀρχαῖος, -α, -ον", definition: "old, ancient (archaic)" },
+                { greek: "ἄφρων, -ον", definition: "foolish" },
+                { greek: "βρῶσις, -εως, ἡ", definition: "eating, food, rust" },
+                { greek: "γέμω", definition: "I fill" },
+                { greek: "δάκρυ, -υος, δάκρυον, -ου, τό", definition: "a tear (akin to lachrymal)" },
+                { greek: "διαμερίζω", definition: "I divide, distribute" },
+                { greek: "δόλος, -ου, ὁ", definition: "guile" },
+                { greek: "δωρεά, -ᾶς, ἡ", definition: "a gift" },
+                { greek: "ἐάω", definition: "I permit" },
+                { greek: "εἴδωλον, -ου, τό", definition: "an image, idol (idol)" },
+                { greek: "εἴκοσι", definition: "twenty (icosahedron, a geometric figure with twenty faces)" },
+                { greek: "εἰσάγω", definition: "I lead in" },
+                { greek: "ἐκχύννομαι", definition: "I pour out" },
+                { greek: "ἔλαιον, -ου, τό", definition: "olive-oil (akin to oil, oleo-)" },
+                { greek: "ἐλευθερία, -ας, ἡ", definition: "liberty" },
+                { greek: "ἐμβλέπω", definition: "I look at" },
+                { greek: "ἐνδείκνυμαι", definition: "I show forth" },
+                { greek: "ἔπαινος, -ου, ὁ", definition: "praise" },
+                { greek: "ἐπαισχύνομαι", definition: "I am ashamed" },
+                { greek: "ἐπισκέπτομαι", definition: "I visit, have a care for (cf. episcopal)" },
+                { greek: "ζηλόω", definition: "I am zealous (cf. zeal)" },
+                { greek: "ζῳοποιέω", definition: "I make alive" },
+                { greek: "θανατόω", definition: "I put to death (cf. thanatopsis)" },
+                { greek: "θάπτω", definition: "I bury (cf. cenotaph; epitaph)" },
+                { greek: "κακία, -ας, ἡ", definition: "malice, evil" },
+                { greek: "καταβολή, -ῆς, ἡ", definition: "a foundation (cf. katabolism)" },
+                { greek: "κατασκευάζω", definition: "I prepare" },
+                { greek: "κάτω", definition: "down, below" },
+                { greek: "καύχημα, -ατος, τό", definition: "a boasting, ground of boasting" },
+                { greek: "καύχησις, -εως, ἡ", definition: "boasting" },
+                { greek: "κέρας, -ατος, τό", definition: "horn (rhinoceros, literally, nose-horn)" },
+                { greek: "κλάδος, -ου, ὁ", definition: "a branch (of a tree) (in botany, cladophyll)" },
+                { greek: "κλῆρος, -ου, ὁ", definition: "a lot (that which is cast or drawn); a portion (clergy; cleric, clerk)" },
+                { greek: "κλῆσις, -εως, ἡ", definition: "a (divine) call, invitation, summons" },
+                { greek: "κλητός, -ή, -όν", definition: "called" },
+                { greek: "κράβαττος, -ου, ὁ", definition: "a mattress, pallet, bed (of a poor man)" },
+                { greek: "λίμνη, -ης, ἡ", definition: "a lake (limnology, the scientific study of ponds and lakes)" },
+                { greek: "μεταβαίνω", definition: "I depart" },
+                { greek: "νεανίσκος, -ου, ὁ", definition: "a youth" },
+                { greek: "νόσος, -ου, ἡ", definition: "a disease (nosophobia, a morbid fear of disease)" },
+                { greek: "ὁμοθυμαδόν", definition: "with one accord" },
+                { greek: "ὀνειδίζω", definition: "I reproach" },
+                { greek: "παράγω", definition: "I pass by" },
+                { greek: "παραλυτικός, -οῦ, ὁ", definition: "a paralytic (paralytic)" },
+                { greek: "παρεμβολή, -ῆς, ἡ", definition: "a camp, army, fortress" },
+                { greek: "περισσοτέρως", definition: "more abundantly" },
+                { greek: "πηγή, -ῆς, ἡ", definition: "a spring, fountain" },
+                { greek: "ποιμαίνω", definition: "I shepherd, rule (poimenic, pertaining to pastoral theology)" },
+                { greek: "πρᾶγμα, -ατος, τό", definition: "a deed, matter, thing (pragmatic)" },
+                { greek: "πραΰτης, -ῆτος, ἡ", definition: "gentleness, humility, courtesy" },
+                { greek: "πρότερος, -α, -ον", definition: "former; as an adverb, before (cf. proto-)" },
+                { greek: "πυνθάνομαι", definition: "I inquire" },
+                { greek: "σάλπιγξ, -ιγγος, ἡ", definition: "a trumpet" },
+                { greek: "σπλάγχνα, -ων, τά", definition: "bowels; heart, tender mercies, compassion (splanchnic)" },
+                { greek: "σπουδάζω", definition: "I hasten, am eager" },
+                { greek: "σφόδρα", definition: "exceedingly" },
+                { greek: "σχίζω", definition: "I split (schism; schizophrenia)" },
+                { greek: "τελευτάω", definition: "I die" },
+                { greek: "τριάκοντα", definition: "indeclinable, thirty" },
+                { greek: "ὑμέτερος, -α, -ον", definition: "your" },
+                { greek: "ὑπαντάω", definition: "I meet, go to meet" },
+                { greek: "ὑποκάτω", definition: "under, below, down at" },
+                { greek: "ὕστερον", definition: "later, afterwards (in rhetoric, hysteron-proteron, a reversing of the natural order of the sense, as ‘he is well and lives’)" },
+                { greek: "φυτεύω", definition: "I plant" },
+                { greek: "φωτίζω", definition: "I give light, enlighten (cf. photo-)" },
+                { greek: "χείρων, -ον", definition: "worse, more severe" },
+                { greek: "χίλιοι, -αι, -α", definition: "a thousand (chiliasm, millenarianism)" },
+                { greek: "χιτών, -ῶνος, ὁ", definition: "a tunic (chiton)" },
+                { greek: "χράομαι", definition: "I use (catachresis, misuse of a word; in rhetoric, a mixed metaphor)" },
+                { greek: "χρυσός, -οῦ, ὁ", definition: "gold (chrysanthemum)" },
+                { greek: "ψευδοπροφήτης, -ου, ὁ", definition: "a false prophet" },
+            ] },
+            { name: "10 times", count: 76, words: [
+                { greek: "ἁγιασμός, -οῦ, ὁ", definition: "sanctification" },
+                { greek: "ᾅδης, -ου, ὁ", definition: "Hades (Hades)" },
+                { greek: "ἀδύνατος, -ον", definition: "incapable, impossible" },
+                { greek: "ἀκαθαρσία, -ας, ἡ", definition: "uncleanness" },
+                { greek: "ἅμα", definition: "at the same time; (dat.) together with" },
+                { greek: "ἀνατολή, -ῆς, ἡ", definition: "east, dawn (Anatolia)" },
+                { greek: "ἀναφέρω", definition: "I bring up, offer" },
+                { greek: "ἄνομος, -ον", definition: "lawless, without law" },
+                { greek: "ἀπολογέομαι", definition: "I defend myself (cf. apology)" },
+                { greek: "ἀπολύτρωσις, -εως, ἡ", definition: "redemption" },
+                { greek: "ἀσέλγεια, -ας, ἡ", definition: "licentiousness, debauchery, sensuality" },
+                { greek: "ἀσπασμός, -οῦ, ὁ", definition: "a greeting" },
+                { greek: "ἀφαιρέω", definition: "I take away (aphaeresis, dropping of a letter or syllable from the beginning of a word, as ‘lone’ from ‘alone’)" },
+                { greek: "ἀφορίζω", definition: "I separate (aphorism)" },
+                { greek: "βίβλος, -ου, ἡ", definition: "a book (Bible)" },
+                { greek: "βίος, -ου, ὁ", definition: "life (biology)" },
+                { greek: "δεσπότης, -ου, ὁ", definition: "a master, lord (despot)" },
+                { greek: "διατρίβω", definition: "I continue (diatribe, a prolonged and acrimonious harangue)" },
+                { greek: "δικαίωμα, -ατος, τό", definition: "regulation, righteous deed" },
+                { greek: "διωγμός, -οῦ, ὁ", definition: "persecution" },
+                { greek: "ἐγκαταλείπω", definition: "I leave behind, forsake, abandon" },
+                { greek: "ἐκκόπτω", definition: "I cut out, cut off" },
+                { greek: "ἐκπίπτω", definition: "I fall away" },
+                { greek: "ἐμφανίζω", definition: "I manifest" },
+                { greek: "ἔνατος, -η, -ον", definition: "ninth (Ennead, one division of the collection made by Porphyry of the teachings of Plotinus, arranged in six divisions of nine books each)" },
+                { greek: "ἔνοχος, -ον", definition: "involved in, liable, guilty" },
+                { greek: "ἐξομολογέομαι", definition: "I confess, profess (in the ancient Church, exomologesis, the public confession of sin, usually accompanied by fasting, weeping, and mourning)" },
+                { greek: "ἐπειδή", definition: "since, because" },
+                { greek: "ἐπιδίδωμι", definition: "I give to" },
+                { greek: "ἐπιτάσσω", definition: "I command" },
+                { greek: "ἐπιτελέω", definition: "I complete, perform" },
+                { greek: "θλίβω", definition: "I press, oppress" },
+                { greek: "ἰσχύς, -ύος, ἡ", definition: "strength" },
+                { greek: "κἀκεῖθεν (= καὶ ἐκεῖθεν)", definition: "and from there; and then" },
+                { greek: "κοινωνός, -οῦ, ὁ", definition: "a partner, sharer (cf. cenobite, one dwelling in a convent community)" },
+                { greek: "κοσμέω", definition: "I adorn (cosmetics)" },
+                { greek: "μακράν", definition: "far away" },
+                { greek: "μακροθυμέω", definition: "I am patient" },
+                { greek: "μέλει", definition: "it is a care" },
+                { greek: "μνῆμα, -ατος, τό", definition: "grave, tomb" },
+                { greek: "νομικός, -ή, -όν", definition: "pertaining to the law; (as a noun), one skilled in the Mosaic law, a lawyer" },
+                { greek: "ξενίζω", definition: "I entertain (a stranger); I startle, bewilder" },
+                { greek: "ὅδε, ἥδε, τόδε", definition: "this (here)" },
+                { greek: "οἰκονόμος, -ου, ὁ", definition: "a steward (economy)" },
+                { greek: "ὀνομάζω", definition: "I name (cf. onomasticon, a collection of proper names)" },
+                { greek: "ὄντως", definition: "really (cf. ontology)" },
+                { greek: "ὅρκος, -ου, ὁ", definition: "an oath" },
+                { greek: "παντοκράτωρ, -ορος, ὁ", definition: "ruler of all, the Almighty" },
+                { greek: "πατάσσω", definition: "I smite" },
+                { greek: "πενθέω", definition: "I mourn" },
+                { greek: "περιστερά, -ᾶς, ἡ", definition: "a dove" },
+                { greek: "πλάνη, -ης, ἡ", definition: "a wandering, error (cf. planet, which to the ancients was apparently a wandering celestial body)" },
+                { greek: "πλατεῖα, -ας, ἡ", definition: "a street (place)" },
+                { greek: "πλεονεξία, -ας, ἡ", definition: "covetousness" },
+                { greek: "ποικίλος, -η, -ον", definition: "varied, manifold" },
+                { greek: "πόρνος, -ου, ὁ", definition: "a fornicator (pornography)" },
+                { greek: "προέρχομαι", definition: "I go in front, precede" },
+                { greek: "προσκαρτερέω", definition: "I continue in or with" },
+                { greek: "πύλη, -ης, ἡ", definition: "a gate, porch (pylon)" },
+                { greek: "σέβομαι", definition: "I reverence, worship" },
+                { greek: "σιγάω", definition: "I am silent, become silent" },
+                { greek: "σιωπάω", definition: "I am silent (aposiopesis, in rhetoric, a figure of speech in which the speaker breaks off suddenly)" },
+                { greek: "στρατηγός, -οῦ, ὁ", definition: "a commander" },
+                { greek: "συγγενής, -ές", definition: "kindred; (as a noun), a relative, kinsman" },
+                { greek: "συζητέω", definition: "I discuss, dispute" },
+                { greek: "σύνδουλος, -ου, ὁ", definition: "a fellow slave" },
+                { greek: "σφάζω", definition: "I slay" },
+                { greek: "τάσσω", definition: "I arrange, appoint, order (cf. tactics)" },
+                { greek: "ταχέως", definition: "quickly (cf. tachygraphy)" },
+                { greek: "τέταρτος, -η, -ον", definition: "fourth (cf. tetrarch, a ruler over a fourth part)" },
+                { greek: "ὑπόδημα, -ατος, τό", definition: "a sandal, shoe" },
+                { greek: "φείδομαι", definition: "I spare" },
+                { greek: "χρηστότης, -ητος, ἡ", definition: "goodness, kindness" },
+                { greek: "χωρίον, -ου, τό", definition: "a place, field (cf. chorography, describing, or description, of districts)" },
+                { greek: "ψεῦδος, -ους, τό", definition: "a lie (cf. pseudo-)" },
+                { greek: "ψεύστης, -ου, ὁ", definition: "a liar (cf. pseudo-)" },
+            ] }
+        ];
+
+        // State management
+        let currentCategory = null;
+        let currentWordIndex = 0;
+        let showingDefinition = false;
+
+        // DOM Elements
+        const categoryGrid = document.getElementById('categoryGrid');
+        const flashCard = document.getElementById('flashCard');
+        const cardContent = document.getElementById('cardContent');
+        const progressBar = document.getElementById('progressBar');
+        const prevButton = document.getElementById('prevButton');
+        const nextButton = document.getElementById('nextButton');
+
+        // Create category buttons
+        vocabularyCategories.forEach(category => {
+            const categoryButton = document.createElement('button');
+            categoryButton.className = 'category';
+            categoryButton.innerHTML = `
+                ${category.name}
+                <span class="category-count">${category.count}</span>
+            `;
+            
+            categoryButton.addEventListener('click', () => selectCategory(category));
+            categoryGrid.appendChild(categoryButton);
+        });
+
+        // Select category
+        function selectCategory(category) {
+            // Remove selected class from all categories
+            document.querySelectorAll('.category').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            // Find and mark the clicked category button
+            const categoryButtons = document.querySelectorAll('.category');
+            for (let i = 0; i < categoryButtons.length; i++) {
+                if (categoryButtons[i].textContent.includes(category.name)) {
+                    categoryButtons[i].classList.add('selected');
+                    break;
+                }
+            }
+            
+            currentCategory = category;
+            currentWordIndex = 0;
+            showingDefinition = false;
+            
+            updateCard();
+            updateNavButtons();
+        }
+
+        // Display current word
+        function updateCard() {
+            if (!currentCategory || currentCategory.words.length === 0) {
+                cardContent.innerHTML = '<p>No words available in this category.</p>';
+                progressBar.style.width = '0%';
+                return;
+            }
+
+            const currentWord = currentCategory.words[currentWordIndex];
+            
+            if (showingDefinition) {
+                cardContent.innerHTML = `
+                    <div class="greek-word">${currentWord.greek}</div>
+                    <div class="word-definition">${currentWord.definition}</div>
+                `;
+            } else {
+                cardContent.innerHTML = `
+                    <div class="greek-word">${currentWord.greek}</div>
+                `;
+            }
+
+            // Update progress bar
+            const progress = ((currentWordIndex + 1) / currentCategory.words.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Update navigation buttons state
+        function updateNavButtons() {
+            if (!currentCategory || currentCategory.words.length <= 1) {
+                prevButton.disabled = true;
+                nextButton.disabled = true;
+                return;
+            }
+
+            prevButton.disabled = currentWordIndex === 0;
+            nextButton.disabled = currentWordIndex === currentCategory.words.length - 1 && showingDefinition;
+        }
+
+        // Flash card click handler
+        flashCard.addEventListener('click', () => {
+            if (!currentCategory || currentCategory.words.length === 0) return;
+            
+            if (showingDefinition) {
+                // Move to next word if available
+                if (currentWordIndex < currentCategory.words.length - 1) {
+                    currentWordIndex++;
+                    showingDefinition = false;
+                }
+            } else {
+                // Show definition
+                showingDefinition = true;
+            }
+            
+            updateCard();
+            updateNavButtons();
+        });
+
+        // Navigation button handlers
+        prevButton.addEventListener('click', () => {
+            if (currentWordIndex > 0) {
+                currentWordIndex--;
+                showingDefinition = false;
+                updateCard();
+                updateNavButtons();
+            }
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (currentWordIndex < currentCategory.words.length - 1) {
+                currentWordIndex++;
+                showingDefinition = false;
+                updateCard();
+                updateNavButtons();
+            }
+        });
+    </script>
+</body>
